@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wang Wise — Financial Life Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{
+  --navy:#0B1020; --navy2:#121A33; --teal:#2DE2B5; --teal-l:rgba(45,226,181,.12);
+  --warn:#F5A94E; --warn-l:rgba(245,169,78,.13); --danger:#FF6B6B; --danger-l:rgba(255,107,107,.13);
+  --violet:#7C6CFF; --cyan:#38BDF8;
+  --bg:#070B18; --card:rgba(255,255,255,.045); --text:#EAF0FF; --sub:#8C97B8; --line:rgba(255,255,255,.09);
+  --radius:18px; --grad:linear-gradient(135deg,#7C6CFF,#38BDF8 60%,#2DE2B5);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);min-height:100vh;
+  background:radial-gradient(900px 500px at 85% -10%,rgba(124,108,255,.22),transparent 60%),radial-gradient(700px 500px at -10% 20%,rgba(56,189,248,.16),transparent 60%),var(--bg);background-attachment:fixed;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0 0 6px;letter-spacing:-.02em;font-weight:700}
+h2{font-size:26px} h3{font-size:16px}
+button{font-family:inherit;cursor:pointer}
+p{line-height:1.6}
+#app{display:none}
+#app.show{display:flex;min-height:100vh}
+.sidebar{width:236px;background:rgba(10,14,30,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-right:1px solid var(--line);padding:24px 14px;flex-shrink:0;position:sticky;top:0;height:100vh}
+.brand{font-size:20px;font-weight:800;margin-bottom:30px;padding:0 10px;display:flex;align-items:center;gap:10px;letter-spacing:-.02em}
+.brand:before{content:"";width:28px;height:28px;border-radius:9px;background:var(--grad);box-shadow:0 0 22px rgba(56,189,248,.55)}
+.brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--sub);font-size:14px;font-weight:500;margin-bottom:4px;background:none;border:1px solid transparent;width:100%;text-align:left;transition:.2s}
+.nav-item svg,.bottomnav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:linear-gradient(135deg,rgba(124,108,255,.25),rgba(56,189,248,.12));border-color:rgba(124,108,255,.4);box-shadow:0 0 24px rgba(124,108,255,.18)}
+.main{flex:1;padding:30px 36px 110px;max-width:1160px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--sub);backdrop-filter:blur(10px)}
+.pill b{color:var(--teal)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.25);transition:.25s}
+.grid>.card:hover{transform:translateY(-3px);border-color:rgba(124,108,255,.45)}
+.stat-label{font-size:12px;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}
+.stat-val{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.section{margin-top:22px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.col{flex:1;min-width:260px}
+.btn{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:600;transition:.2s}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.13)}
+.btn.teal{background:var(--grad);color:#06101F;border:none;box-shadow:0 6px 22px rgba(56,189,248,.3)}
+.btn.warn{background:var(--warn);color:#1a1000;border:none}
+.btn.danger{background:var(--danger);color:#200;border:none}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em}
+.badge.low{background:var(--teal-l);color:var(--teal)}
+.badge.mid{background:var(--warn-l);color:var(--warn)}
+.badge.high{background:var(--danger-l);color:var(--danger)}
+.bar-track{background:rgba(255,255,255,.08);border-radius:999px;height:8px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;background:var(--grad);border-radius:999px;transition:width .6s}
+.hidden{display:none!important}
+input[type=number],select{padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:var(--text);width:100%;outline:none}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+label{font-size:12px;color:var(--sub);display:block;margin:12px 0 5px}
+.quiz-opt{display:block;width:100%;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;color:var(--text);transition:.2s}
+.quiz-opt:hover:not(:disabled){border-color:var(--violet);background:rgba(124,108,255,.1)}
+.quiz-opt.correct{background:var(--teal-l);border-color:var(--teal)}
+.quiz-opt.wrong{background:var(--danger-l);border-color:var(--danger)}
+.setup-card{border:1px solid var(--line);border-radius:var(--radius);padding:18px;cursor:pointer;background:rgba(255,255,255,.04);transition:.25s}
+.setup-card:hover{transform:translateY(-3px)}
+.setup-card.sel{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,.18),0 0 30px rgba(56,189,248,.2)}
+.timeline-item{border-left:2px solid var(--violet);padding:4px 0 4px 16px;margin-bottom:10px;font-size:14px;color:var(--text);position:relative}
+.timeline-item:before{content:"";position:absolute;left:-6px;top:10px;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.small{font-size:12.5px;color:var(--sub)}
+.chip{display:inline-block;background:rgba(124,108,255,.15);border:1px solid rgba(124,108,255,.35);border-radius:999px;padding:5px 12px;font-size:12.5px;margin:0 6px 6px 0}
+.hero{display:flex;align-items:center;gap:26px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(124,108,255,.22),rgba(56,189,248,.1));margin-bottom:14px}
+.ring{position:relative;width:132px;height:132px}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:800}
+.ring b small{font-size:11px;color:var(--sub);font-weight:500}
+.bottomnav{display:none}
+#toast{position:fixed;top:20px;left:50%;transform:translate(-50%,-20px);background:rgba(18,26,51,.95);border:1px solid var(--line);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;opacity:0;transition:.3s;z-index:999;max-width:90vw;backdrop-filter:blur(12px)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#setupScreen{max-width:820px;margin:40px auto;padding:24px}
+.asset-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line)}
+/* Chat widget */
+#chatFab{position:fixed;right:24px;bottom:24px;width:60px;height:60px;border-radius:50%;border:none;background:var(--grad);box-shadow:0 10px 34px rgba(124,108,255,.55);z-index:80;display:flex;align-items:center;justify-content:center;transition:.25s}
+#chatFab:hover{transform:scale(1.08)}
+#chatFab svg{width:26px;height:26px;stroke:#06101F;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#chatPanel{position:fixed;right:24px;bottom:98px;width:370px;height:540px;max-height:calc(100vh - 130px);background:rgba(12,17,36,.92);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.6);z-index:81;display:none;flex-direction:column;overflow:hidden}
+#chatPanel.open{display:flex;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.chat-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(124,108,255,.25),rgba(56,189,248,.1))}
+.chat-head i{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal)}
+.chat-head b{font-size:15px;flex:1}
+.chat-head button{background:none;border:none;color:var(--sub);font-size:22px;line-height:1}
+#chatMsgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.55;white-space:pre-line;animation:pop .2s ease}
+.msg.bot{background:rgba(255,255,255,.07);border-bottom-left-radius:5px;align-self:flex-start}
+.msg.me{background:var(--grad);color:#06101F;border-bottom-right-radius:5px;align-self:flex-end;font-weight:500}
+.chat-chips{padding:0 14px 8px;display:flex;gap:6px;flex-wrap:wrap}
+.chat-chips button{background:rgba(124,108,255,.14);border:1px solid rgba(124,108,255,.35);color:var(--text);border-radius:999px;padding:6px 12px;font-size:12px}
+.chat-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.chat-in input{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.05);color:var(--text);outline:none;font-family:inherit}
+.chat-in button{width:42px;height:42px;border-radius:50%;border:none;background:var(--grad);color:#06101F;font-size:17px;font-weight:700}
+.dots span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--sub);animation:blink 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+@media (max-width:820px){
+  .sidebar{display:none}
+  .main{padding:20px 16px 130px;max-width:none}
+  h2{font-size:22px}
+  .bottomnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,30,.9);backdrop-filter:blur(18px);border-top:1px solid var(--line);z-index:50;padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));overflow-x:auto}
+  .bottomnav button{flex:1;min-width:58px;background:none;border:none;color:var(--sub);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px}
+  .bottomnav button.active{color:var(--teal)}
+  #app.show{flex-direction:column}
+  #chatFab{right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:54px;height:54px}
+  #chatPanel{right:0;left:0;bottom:0;width:100%;height:82vh;max-height:none;border-radius:22px 22px 0 0}
+}
+</style>
+</head>
+<body>
+
+<div id="setupScreen">
+  <div class="card">
+    <h1 style="font-size:32px">Welcome to <span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent">Wang Wise</span></h1>
+    <p class="small">Manage a virtual financial life, learn by doing, and build real financial habits — no real money involved. Pick a starting profile:</p>
+    <div class="grid" id="profileGrid" style="margin-top:16px"></div>
+    <div id="customize" class="section hidden">
+      <h3>Fine-tune your start (optional)</h3>
+      <div class="row">
+        <div class="col"><label>Monthly income (RM)</label><input type="number" id="custIncome"></div>
+        <div class="col"><label>Starting cash (RM)</label><input type="number" id="custCash"></div>
+      </div>
+    </div>
+    <button class="btn teal" style="margin-top:18px" id="startBtn" disabled>Start My Financial Journey →</button>
+    <p class="small" style="margin-top:14px">This game is designed for financial education and simulation purposes only. It does not provide personalised financial advice or guarantee investment results.</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar">
+    <div class="brand">Wang <span>Wise</span></div>
+    <nav id="navList"></nav>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div><h2 id="pageTitle">Dashboard</h2><span class="small" id="pageSub"></span></div>
+      <div class="pill">Month <span id="monthNum">1</span> · Lvl <span id="lvlNum">1</span></div>
+    </div>
+    <div id="pageContent"></div>
+  </div>
+  <div class="bottomnav" id="bottomNav"></div>
+  <button id="chatFab" aria-label="Open AI coach"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg></button>
+  <div id="chatPanel"><div class="chat-head"><i></i><b>AI Financial Coach</b><button id="chatClose" aria-label="Close">×</button></div>
+    <div id="chatMsgs"></div>
+    <div class="chat-chips"><button data-q="Analyse my finances">Analyse my finances</button><button data-q="分析我的财务">分析我的财务</button><button data-q="How is my score?">My score</button><button data-q="Emergency fund?">Emergency fund</button></div>
+    <div class="chat-in"><input id="chatInput" placeholder="Ask anything… / 输入问题" autocomplete="off"><button id="chatSend" aria-label="Send">➤</button></div></div>
+  
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============ STATE ============ */
+const ASSETS = [
+  {id:'cash', name:'Cash', risk:'Very Low', color:'#6B7488'},
+  {id:'bond', name:'Government Bond', risk:'Low', color:'#3E7BD9'},
+  {id:'gold', name:'Gold', risk:'Medium', color:'#D9A93E'},
+  {id:'msia', name:'Malaysian Stock', risk:'Medium', color:'#1E9E7C'},
+  {id:'tech', name:'Technology Stock', risk:'High', color:'#D6503F'},
+];
+const PROFILES = {
+  student:{label:'Student',icon:'🎓',income:2000,cash:800,savings:200,emergencyFund:100,debt:0,desc:'Low income, low expenses, learning the basics.'},
+  young:{label:'Young Professional',icon:'💼',income:4000,cash:1500,savings:600,emergencyFund:500,debt:800,desc:'Medium income and expenses, some experience.'},
+  family:{label:'Family',icon:'👨‍👩‍👧',income:7000,cash:2000,savings:1000,emergencyFund:1500,debt:2000,desc:'Higher income, higher responsibilities.'},
+  entrepreneur:{label:'Entrepreneur',icon:'🚀',income:5000,cash:1200,savings:300,emergencyFund:200,debt:1500,desc:'Variable income, higher risk & potential return.'}
+};
+const LESSONS = [
+  {id:'l1',title:'Income & Budgeting',xp:20,
+   text:"Budgeting means deciding in advance where your money goes, instead of wondering where it went. A simple rule: spend less than you earn, every single month.",
+   example:"Example: you earn RM3,000 and your expenses are RM2,400. That leaves RM600 to save or invest.",
+   q:"You earn RM3,000/month. Expenses are RM2,400. How much can you potentially save?",
+   opts:['RM300','RM600','RM900','RM1,200'], correct:1,
+   explain:"RM3,000 − RM2,400 = RM600. That's your monthly surplus."},
+  {id:'l2',title:'The 6 Jars System',xp:20,
+   text:"The 6 Jars method splits income into: Necessities (55%), Play (10%), Education (10%), Financial Freedom/Investing (10%), Long-Term Savings (10%), Give (5%). It keeps spending, saving and giving balanced automatically.",
+   example:"Example: with RM2,000 income, 10% Financial Freedom = RM200 goes straight to investing every month.",
+   q:"In the 6 Jars system, what % goes into 'Financial Freedom' (investing)?",
+   opts:['5%','10%','25%','55%'], correct:1,
+   explain:"10% is set aside for Financial Freedom, meant to be invested and never touched for spending."},
+  {id:'l3',title:'Emergency Funds',xp:20,
+   text:"An emergency fund is cash set aside only for real emergencies (medical bills, job loss, urgent repairs) — usually 3-6 months of expenses. Without one, a single shock forces you into debt.",
+   example:"Example: RM2,400 monthly expenses → a healthy emergency fund is RM7,200–RM14,400.",
+   q:"Your expenses are RM2,000/month. What's a reasonable emergency fund target (3 months)?",
+   opts:['RM500','RM2,000','RM6,000','RM20,000'], correct:2,
+   explain:"3 months × RM2,000 = RM6,000. Aim to build toward this before taking on investment risk."},
+  {id:'l4',title:'Credit Cards & Debt',xp:20,
+   text:"A credit card lets you spend now and pay later, but unpaid balances charge high interest (often 15-18% a year). Paying only the minimum lets debt snowball fast.",
+   example:"Example: RM800 unpaid at 18%/year adds roughly RM12 in interest per month if left unpaid.",
+   q:"What's the safest way to use a credit card?",
+   opts:['Pay only the minimum every month','Pay the full balance every month','Max it out for rewards points','Ignore the statement'], correct:1,
+   explain:"Paying in full avoids interest entirely — the card becomes a convenience, not a debt trap."},
+];
+const SCENARIOS = [
+  {id:'car',title:'🚗 Car Repair',desc:'Your car breaks down. Repair cost: RM1,500.',impact:-1500,
+   choices:[
+     {label:'Use emergency fund',fn:s=>{s.emergencyFund-=1500; return "You covered it without new debt — your emergency fund did its job."}},
+     {label:'Use credit card',fn:s=>{s.debt+=1500; return "No cash hit today, but RM1,500 of debt now earns interest against you."}},
+     {label:'Sell investments',fn:s=>{s.investCash(1500); return "You raised the cash, but lost potential future growth and may have sold at a bad time."}},
+     {label:'Reduce other expenses',fn:s=>{s.expenses.other=Math.max(0,s.expenses.other-200); s.cash-=1500; return "Cash took the hit directly and you trimmed future spending too."}},
+   ], learn:"An emergency fund exists exactly for moments like this — using debt for a one-off repair usually costs more in the long run."},
+  {id:'med',title:'🏥 Medical Expense',desc:'An unexpected medical bill arrives: RM2,000.',impact:-2000,
+   choices:[
+     {label:'Pay from savings',fn:s=>{s.savings=Math.max(0,s.savings-2000); return "Your savings absorbed the shock; keep rebuilding them."}},
+     {label:'Pay from emergency fund',fn:s=>{s.emergencyFund=Math.max(0,s.emergencyFund-2000); return "Exactly what this fund is for — well handled."}},
+     {label:'Put it on credit card',fn:s=>{s.debt+=2000; return "Quick fix, but interest will make this cost more over time."}},
+   ], learn:"Medical costs are a top reason people fall into debt — this is why 3-6 months of expenses in an emergency fund matters."},
+  {id:'bull',title:'📈 Market Rises',desc:'Markets rally. Riskier assets gain the most.',impact:0,
+   choices:[
+     {label:'Stay invested',fn:s=>{s.applyMarket(1); return "Patience paid off — your portfolio grew with the market."}},
+     {label:'Sell everything to lock in gains',fn:s=>{s.applyMarket(1); s.liquidateAll(); return "You banked the gain but now sit in cash, missing further growth and paying the 'emotional exit' cost."}},
+   ], learn:"Trying to perfectly time market tops is extremely hard — long-term investors usually do better staying the course."},
+  {id:'bear',title:'📉 Market Crash',desc:'A downturn hits. Riskier assets fall the most.',impact:0,
+   choices:[
+     {label:'Hold your positions',fn:s=>{s.applyMarket(-1); return "Selling low locks in losses — holding gives your portfolio time to recover."}},
+     {label:'Panic-sell everything',fn:s=>{s.applyMarket(-1); s.liquidateAll(); return "You locked in the loss permanently. This is 'emotional investing' — one of the biggest destroyers of returns."}},
+   ], learn:"Market crashes are normal and temporary. Selling in panic turns a paper loss into a real one."},
+  {id:'cc',title:'💳 Credit Card Payment Due',desc:'A payment of RM800 is due on your card.',impact:-800,
+   choices:[
+     {label:'Pay in full',fn:s=>{s.cash-=800; s.debt=Math.max(0,s.debt-800); return "No interest charged — the cleanest outcome."}},
+     {label:'Pay minimum only (RM100)',fn:s=>{s.cash-=100; s.debt=Math.max(0,s.debt-100)+Math.round(s.debt*0.02); return "The remaining balance keeps accumulating interest, growing your debt."}},
+     {label:'Use savings to cover it',fn:s=>{s.savings=Math.max(0,s.savings-800); s.debt=Math.max(0,s.debt-800); return "Debt cleared, but your savings buffer shrank."}},
+   ], learn:"Carrying a credit card balance is one of the most expensive forms of debt — clearing it fully avoids compounding interest."},
+  {id:'inf',title:'🔥 Inflation Rises (2% → 5%)',desc:'Everyday costs are rising faster than usual.',impact:0,
+   choices:[
+     {label:'Adjust budget & cut non-essentials',fn:s=>{s.expenses.entertainment=Math.max(0,s.expenses.entertainment-100); return "You protected your savings rate by trimming discretionary spending."}},
+     {label:'Keep spending the same',fn:s=>{s.cash-=150; return "Your real purchasing power quietly shrank — RM100 buys less than before."}},
+   ], learn:"Inflation erodes cash sitting idle and raises food, transport and rent costs — investments that outpace inflation help protect long-term value."},
+];
+function defaultState(profileKey, overrides){
+  const p = PROFILES[profileKey];
+  return {
+    profile:profileKey, month:1, xp:0,
+    income: overrides?.income ?? p.income,
+    cash: overrides?.cash ?? p.cash,
+    savings: p.savings, emergencyFund: p.emergencyFund, debt: p.debt,
+    expenses:{rent:Math.round(p.income*0.28),food:Math.round(p.income*0.15),transport:Math.round(p.income*0.08),entertainment:Math.round(p.income*0.07),other:Math.round(p.income*0.05)},
+    prices:{cash:1,bond:100,gold:100,msia:100,tech:100},
+    holdings:{cash:0,bond:0,gold:0,msia:0,tech:0},
+    lessonsDone:[], scenariosDone:0, badges:[],
+    netWorthHistory:[], timeline:[{m:1,text:'Game started — income received, starting budget set.'}],
+  };
+}
+let S = null;
+function totalExpenses(){return Object.values(S.expenses).reduce((a,b)=>a+b,0);}
+function portfolioValue(){return ASSETS.reduce((sum,a)=>sum+S.holdings[a.id]*S.prices[a.id],0);}
+function netWorth(){return S.cash+S.savings+S.emergencyFund+portfolioValue()-S.debt;}
+function investCash(amount){ // sell proportionally from holdings to raise `amount` cash
+  let need = amount; const val = portfolioValue();
+  if(val<=0){ S.cash -= (amount-0); return; }
+  ASSETS.forEach(a=>{
+    if(a.id==='cash') return;
+    const v = S.holdings[a.id]*S.prices[a.id];
+    const take = Math.min(v, need*(v/val || 0));
+    S.holdings[a.id] -= take/S.prices[a.id];
+  });
+  S.cash += amount;
+}
+function liquidateAll(){ const v=portfolioValue(); ASSETS.forEach(a=>S.holdings[a.id]=0); S.cash+=v; }
+function applyMarket(dir){ // dir 1 = bull, -1 = bear
+  const moves = {cash:0, bond:dir*0.02, gold:dir*0.06, msia:dir*0.10, tech:dir*0.18};
+  Object.keys(moves).forEach(id=>{ S.prices[id] = Math.max(1, Math.round(S.prices[id]*(1+moves[id]+ (Math.random()-0.5)*0.02))); });
+}
+S = {}; // placeholder, real state built on start/load
+function attachHelpers(state){ state.investCash=investCash; state.applyMarket=applyMarket; state.liquidateAll=liquidateAll; return state; }
+
+/* ============ HEALTH SCORE ============ */
+function healthScore(){
+  const exp = totalExpenses();
+  const savingsScore = Math.min(1, S.savings/(S.income*0.5||1))*20;
+  const efScore = Math.min(1, S.emergencyFund/(exp*3||1))*20;
+  const debtScore = Math.max(0, 1-(S.debt/(S.income*2||1)))*20;
+  const spendScore = Math.max(0, 1-(exp/(S.income||1)))*15;
+  const div = ASSETS.filter(a=>S.holdings[a.id]*S.prices[a.id]>0).length;
+  const divScore = Math.min(1, div/4)*15;
+  const cashFlow = (S.income-exp)>=0 ? 10 : 0;
+  return Math.round(savingsScore+efScore+debtScore+spendScore+divScore+cashFlow);
+}
+function scoreLabel(sc){ return sc>=80?'Excellent Financial Health':sc>=60?'Good Financial Health':sc>=40?'Needs Attention':'At Risk'; }
+
+/* ============ LEVELS / BADGES ============ */
+const LEVELS = ['Financial Beginner','Smart Saver','Financial Explorer','Investor','Financial Strategist'];
+function levelFromXp(xp){ return Math.min(LEVELS.length, Math.floor(xp/60)+1); }
+function checkBadges(){
+  const add=(id,label)=>{ if(!S.badges.includes(id)){ S.badges.push(id); toast('🏆 Badge earned: '+label); } };
+  if(S.savings>=500) add('save1','First Savings Goal');
+  if(S.emergencyFund>= totalExpenses()*3) add('ef1','Emergency Fund Builder');
+  if(ASSETS.filter(a=>S.holdings[a.id]*S.prices[a.id]>0).length>=4) add('div1','Diversification Master');
+  if(S.debt<=0) add('debt1','Debt Free');
+  if(S.scenariosDone>=3) add('mkt1','Market Survivor');
+  if(healthScore()>=80) add('strat1','Financial Strategist');
+}
+
+/* ============ PERSISTENCE ============ */
+function save(){ try{ localStorage.setItem('wangwise_save', JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const raw=localStorage.getItem('wangwise_save'); if(!raw) return false; S=attachHelpers(JSON.parse(raw)); return true; }catch(e){ return false; } }
+
+/* ============ UI: SETUP ============ */
+const profileGrid = document.getElementById('profileGrid');
+let selectedProfile=null, customIncome=null, customCash=null;
+Object.entries(PROFILES).forEach(([key,p])=>{
+  const el=document.createElement('div');
+  el.className='setup-card'; el.dataset.key=key;
+  el.innerHTML=`<div style="font-size:26px">${p.icon}</div><h3>${p.label}</h3><p class="small">${p.desc}</p><div class="stat-val" style="font-size:18px">RM${p.income.toLocaleString()}/mo</div>`;
+  el.onclick=()=>{ document.querySelectorAll('.setup-card').forEach(c=>c.classList.remove('sel')); el.classList.add('sel');
+    selectedProfile=key; document.getElementById('customize').classList.remove('hidden');
+    document.getElementById('custIncome').value=p.income; document.getElementById('custCash').value=p.cash;
+    document.getElementById('startBtn').disabled=false; };
+  profileGrid.appendChild(el);
+});
+document.getElementById('startBtn').onclick=()=>{
+  const inc = parseInt(document.getElementById('custIncome').value)||undefined;
+  const csh = parseInt(document.getElementById('custCash').value)||undefined;
+  S = attachHelpers(defaultState(selectedProfile,{income:inc,cash:csh}));
+  save(); boot();
+};
+
+/* ============ NAV / ROUTER ============ */
+const IC=(d)=>`<svg viewBox="0 0 24 24">${d}</svg>`;
+const PAGES = [
+  {id:'dash',label:'Dashboard',icon:IC('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>')},
+  {id:'learn',label:'Learn',icon:IC('<path d="M2 7l10-4 10 4-10 4z"/><path d="M6 9v6c0 1.5 3 3 6 3s6-1.5 6-3V9"/>')},
+  {id:'finances',label:'My Finances',icon:IC('<rect x="2" y="6" width="20" height="13" rx="3"/><path d="M2 10h20M16 15h2"/>')},
+  {id:'invest',label:'Investment',icon:IC('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>')},
+  {id:'scenarios',label:'Scenarios',icon:IC('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>')},
+  {id:'progress',label:'Progress',icon:IC('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/>')},
+  {id:'settings',label:'Settings',icon:IC('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>')},
+];
+let current='dash';
+function buildNav(){
+  const navList=document.getElementById('navList'); navList.innerHTML='';
+  const bn=document.getElementById('bottomNav'); bn.innerHTML='';
+  PAGES.forEach(p=>{
+    const b=document.createElement('button'); b.className='nav-item'+(p.id===current?' active':''); b.innerHTML=`${p.icon} ${p.label}`;
+    b.onclick=()=>{current=p.id; render();}; navList.appendChild(b);
+    const b2=document.createElement('button'); b2.className=(p.id===current?'active':''); b2.innerHTML=`<span>${p.icon}</span>${p.label}`;
+    b2.onclick=()=>{current=p.id; render();}; bn.appendChild(b2);
+  });
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2600); }
+
+/* ============ RENDER PAGES ============ */
+function fmt(n){ return 'RM'+Math.round(n).toLocaleString(); }
+function riskBadge(v){ return v==='High'?'high':v==='Low'||v==='Very Low'?'low':'mid'; }
+
+function render(){
+  buildNav();
+  document.getElementById('pageTitle').textContent = PAGES.find(p=>p.id===current).label;
+  document.getElementById('monthNum').textContent = S.month;
+  document.getElementById('lvlNum').textContent = levelFromXp(S.xp);
+  const c = document.getElementById('pageContent'); c.innerHTML='';
+  ({dash:renderDash,learn:renderLearn,finances:renderFinances,invest:renderInvest,scenarios:renderScenarios,progress:renderProgress,settings:renderSettings})[current](c);
+  save();
+}
+
+function renderDash(c){
+  const sc = healthScore();
+  document.getElementById('pageSub').textContent = "Good to see you, Player 👋";
+  const cards = [
+    ['Financial Health Score', sc+'/100', scoreLabel(sc)],
+    ['Net Worth', fmt(netWorth()), ''],
+    ['Cash', fmt(S.cash), ''],
+    ['Investments', fmt(portfolioValue()), ''],
+    ['Debt', fmt(S.debt), S.debt>0?'Owed':'Debt free'],
+    ['Emergency Fund', fmt(S.emergencyFund), ''],
+  ];
+  const circ=326.7, off=circ*(1-sc/100);
+  c.innerHTML = `<div class="card hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="52" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="10"/><circle cx="66" cy="66" r="52" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/><defs><linearGradient id="g"><stop offset="0" stop-color="#7C6CFF"/><stop offset="1" stop-color="#2DE2B5"/></linearGradient></defs></svg><b>${sc}<small>/ 100</small></b></div>
+    <div style="flex:1;min-width:200px"><div class="stat-label">Financial Health</div><h2>${scoreLabel(sc)}</h2><p class="small">Net worth <b style="color:var(--text)">${fmt(netWorth())}</b> · Ask the AI coach (bottom-right) for personalised tips.</p></div></div>
+  <div class="grid">${cards.map(([l,v,s])=>`<div class="card"><div class="stat-label">${l}</div><div class="stat-val">${v}</div><div class="small">${s}</div></div>`).join('')}</div>`;
+
+  // income vs expense bars
+  const exp=totalExpenses();
+  const wrap=document.createElement('div'); wrap.className='section row';
+  const maxv = Math.max(S.income, exp, 1);
+  wrap.innerHTML = `
+  <div class="card col"><h3>Monthly Cash Flow</h3>
+    <div class="small">Income</div><div class="bar-track"><div class="bar-fill" style="width:${S.income/maxv*100}%;background:var(--teal)"></div></div>
+    <div class="small" style="margin-top:10px">Expenses</div><div class="bar-track"><div class="bar-fill" style="width:${exp/maxv*100}%;background:var(--warn)"></div></div>
+    <p class="small" style="margin-top:10px">Surplus: <b>${fmt(S.income-exp)}</b>/month</p>
+  </div>
+  <div class="card col"><h3>Net Worth Trend</h3><svg viewBox="0 0 300 100" style="width:100%;height:100px">${netWorthSpark()}</svg>
+    <p class="small">Tracks net worth each time you advance a month.</p></div>`;
+  c.appendChild(wrap);
+
+  const recent=document.createElement('div'); recent.className='section card';
+  recent.innerHTML = `<h3>Recent Timeline</h3>` + S.timeline.slice(-4).reverse().map(t=>`<div class="timeline-item">Month ${t.m}: ${t.text}</div>`).join('');
+  c.appendChild(recent);
+}
+function netWorthSpark(){
+  const hist = S.netWorthHistory.length? S.netWorthHistory : [netWorth()];
+  const min=Math.min(...hist), max=Math.max(...hist,min+1);
+  const pts = hist.map((v,i)=>`${(i/(Math.max(hist.length-1,1)))*300},${100-((v-min)/(max-min||1))*90-5}`).join(' ');
+  return `<polyline points="${pts}" fill="none" stroke="#1E9E7C" stroke-width="3"/>`;
+}
+
+function renderFinances(c){
+  document.getElementById('pageSub').textContent='Edit your budget and manage cash';
+  const exp=S.expenses;
+  c.innerHTML = `
+  <div class="row">
+    <div class="card col"><h3>Monthly Expenses</h3>
+      ${Object.keys(exp).map(k=>`<label>${k[0].toUpperCase()+k.slice(1)} (RM)</label><input type="number" data-exp="${k}" value="${exp[k]}">`).join('')}
+      <button class="btn teal" id="saveExpBtn" style="margin-top:12px">Save Budget</button>
+    </div>
+    <div class="col">
+      <div class="card"><h3>Quick Actions</h3>
+        <button class="btn" id="moveSaveBtn">Move RM200 Cash → Savings</button><br><br>
+        <button class="btn teal" id="moveEfBtn">Move RM200 Cash → Emergency Fund</button><br><br>
+        <button class="btn warn" id="payDebtBtn" ${S.debt<=0?'disabled':''}>Pay RM300 toward Debt</button><br><br>
+        <button class="btn danger" id="ccBtn">Use Credit Card (+RM500 cash, +RM500 debt)</button>
+      </div>
+      <div class="card section"><h3>Advance</h3><p class="small">Collect income, pay expenses, accrue debt interest, and move to next month. A random scenario may occur.</p>
+        <button class="btn teal" id="advanceBtn">Advance Month →</button>
+      </div>
+    </div>
+  </div>`;
+  c.querySelector('#saveExpBtn').onclick=()=>{
+    c.querySelectorAll('[data-exp]').forEach(inp=>{ S.expenses[inp.dataset.exp]=Math.max(0,parseInt(inp.value)||0); });
+    toast('Budget updated'); render();
+  };
+  c.querySelector('#moveSaveBtn').onclick=()=>{ if(S.cash>=200){S.cash-=200;S.savings+=200;checkBadges();render();}else toast('Not enough cash'); };
+  c.querySelector('#moveEfBtn').onclick=()=>{ if(S.cash>=200){S.cash-=200;S.emergencyFund+=200;checkBadges();render();}else toast('Not enough cash'); };
+  c.querySelector('#payDebtBtn').onclick=()=>{ const p=Math.min(300,S.debt); S.debt-=p; S.cash-=p; checkBadges(); render(); };
+  c.querySelector('#ccBtn').onclick=()=>{ S.cash+=500; S.debt+=500; render(); };
+  c.querySelector('#advanceBtn').onclick=()=>advanceMonth();
+}
+
+function advanceMonth(){
+  const exp=totalExpenses();
+  S.cash += S.income - exp;
+  if(S.debt>0) S.debt = Math.round(S.debt*1.02); // 2% monthly interest
+  S.month++;
+  S.timeline.push({m:S.month, text:`Income RM${S.income} received, RM${exp} in expenses paid.`});
+  S.netWorthHistory.push(netWorth());
+  if(Math.random()<0.7){
+    const sc = SCENARIOS[Math.floor(Math.random()*SCENARIOS.length)];
+    S._pendingScenario = sc; current='scenarios';
+  }
+  checkBadges(); save(); render();
+  toast('Month '+S.month+' begins');
+}
+
+function renderInvest(c){
+  document.getElementById('pageSub').textContent='Allocate virtual money — no real funds involved';
+  const val = portfolioValue();
+  c.innerHTML = `<div class="grid">
+    <div class="card"><div class="stat-label">Portfolio Value</div><div class="stat-val">${fmt(val)}</div></div>
+    <div class="card"><div class="stat-label">Cash Available</div><div class="stat-val">${fmt(S.cash)}</div></div>
+    <div class="card"><div class="stat-label">Diversification</div><div class="stat-val">${ASSETS.filter(a=>S.holdings[a.id]*S.prices[a.id]>0).length}/5 assets</div></div>
+  </div>
+  <div class="card section">
+    <h3>Simulate Market Event</h3>
+    <p class="small">Prices move instantly for all holdings.</p>
+    <button class="btn teal" id="bullBtn">📈 Simulate Bull Market (+)</button>
+    <button class="btn danger" id="bearBtn" style="margin-left:8px">📉 Simulate Bear Market (−)</button>
+  </div>
+  <div class="card section"><h3>Assets</h3>
+    ${ASSETS.map(a=>{
+      const holdVal = S.holdings[a.id]*S.prices[a.id];
+      return `<div class="asset-row">
+        <div><b>${a.name}</b> <span class="badge ${riskBadge(a.risk)}">${a.risk} risk</span><div class="small">Price: ${fmt(S.prices[a.id])} · Holding: ${fmt(holdVal)}</div></div>
+        <div>
+          <button class="btn ghost" data-buy="${a.id}">Buy RM100</button>
+          <button class="btn ghost" data-sell="${a.id}" ${holdVal<=0?'disabled':''}>Sell RM100</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  c.querySelector('#bullBtn').onclick=()=>{ applyMarket(1); toast('Market rallied 📈'); render(); };
+  c.querySelector('#bearBtn').onclick=()=>{ applyMarket(-1); toast('Market crashed 📉'); render(); };
+  c.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{ const id=b.dataset.buy; if(S.cash>=100){ S.cash-=100; S.holdings[id]+=100/S.prices[id]; checkBadges(); render(); } else toast('Not enough cash'); });
+  c.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>{ const id=b.dataset.sell; const v=S.holdings[id]*S.prices[id]; const amt=Math.min(100,v); S.holdings[id]-=amt/S.prices[id]; S.cash+=amt; render(); });
+}
+
+function renderScenarios(c){
+  document.getElementById('pageSub').textContent='Unexpected events test what you\'ve learned';
+  const sc = S._pendingScenario;
+  if(!sc){
+    c.innerHTML = `<div class="card"><h3>No active scenario</h3><p class="small">Advance a month in My Finances, or draw one manually below.</p>
+      <button class="btn teal" id="drawBtn">🎲 Draw a Scenario</button></div>`;
+    c.querySelector('#drawBtn').onclick=()=>{ S._pendingScenario = SCENARIOS[Math.floor(Math.random()*SCENARIOS.length)]; render(); };
+    return;
+  }
+  c.innerHTML = `<div class="card"><h3>${sc.title}</h3><p>${sc.desc}</p>
+    <div id="choiceArea">${sc.choices.map((ch,i)=>`<button class="quiz-opt" data-i="${i}">${ch.label}</button>`).join('')}</div>
+    <div id="resultArea"></div>
+  </div>`;
+  c.querySelectorAll('[data-i]').forEach(btn=>btn.onclick=()=>{
+    const ch = sc.choices[btn.dataset.i];
+    const outcome = ch.fn(S);
+    S.scenariosDone++;
+    S.timeline.push({m:S.month, text:sc.title+' — '+ch.label});
+    checkBadges(); save();
+    document.getElementById('choiceArea').querySelectorAll('button').forEach(b=>b.disabled=true);
+    document.getElementById('resultArea').innerHTML = `<div class="card" style="margin-top:12px;background:var(--teal-l)">
+      <p><b>What happened:</b> ${outcome}</p><p><b>Why this matters:</b> ${sc.learn}</p>
+      <button class="btn teal" id="doneScenario">Continue</button></div>`;
+    document.getElementById('doneScenario').onclick=()=>{ S._pendingScenario=null; render(); };
+  });
+}
+
+function renderLearn(c){
+  document.getElementById('pageSub').textContent='Short lessons that improve your in-game decisions';
+  c.innerHTML='';
+  LESSONS.forEach(l=>{
+    const done = S.lessonsDone.includes(l.id);
+    const box=document.createElement('div'); box.className='card section';
+    box.innerHTML = `<h3>${l.title} ${done?'<span class="badge low">Completed</span>':''}</h3>
+      <p>${l.text}</p><p class="small">${l.example}</p>
+      <div id="quiz-${l.id}">
+        <p><b>${l.q}</b></p>
+        ${l.opts.map((o,i)=>`<button class="quiz-opt" data-lesson="${l.id}" data-i="${i}">${o}</button>`).join('')}
+      </div>`;
+    c.appendChild(box);
+  });
+  c.querySelectorAll('[data-lesson]').forEach(btn=>btn.onclick=()=>{
+    const l = LESSONS.find(x=>x.id===btn.dataset.lesson);
+    const i = parseInt(btn.dataset.i);
+    const area = document.getElementById('quiz-'+l.id);
+    area.querySelectorAll('button').forEach((b,bi)=>{ b.disabled=true; if(bi===l.correct) b.classList.add('correct'); });
+    if(i!==l.correct) btn.classList.add('wrong');
+    const already = S.lessonsDone.includes(l.id);
+    if(!already){ S.lessonsDone.push(l.id); S.xp += l.xp; toast('+'+l.xp+' XP'); checkBadges(); }
+    area.innerHTML += `<p class="small" style="margin-top:8px"><b>Explanation:</b> ${l.explain}</p>`;
+    save();
+  });
+}
+
+function coachAnalyze(zh){
+  const T=(en,cn)=>zh?cn:en; const exp=totalExpenses(); const notes=[],recs=[];
+  if(S.expenses.entertainment>S.income*0.3){notes.push(T('You spend over 30% of income on entertainment.','你的娱乐支出超过收入的30%。'));recs.push(T('Trim entertainment toward 10-15% of income.','把娱乐支出降到收入的10-15%。'));}
+  if(S.emergencyFund<exp*3){notes.push(T('Your emergency fund may not cover unexpected costs (target: 3-6 months of expenses).','你的紧急基金可能不足以应对意外(目标:3-6个月支出)。'));recs.push(T('Build your emergency fund before adding investment risk.','先补足紧急基金,再增加投资风险。'));}
+  const pv=portfolioValue();
+  if(pv>0&&S.holdings.tech*S.prices.tech/pv>0.6){notes.push(T('Your portfolio is concentrated in high-risk assets.','你的投资过度集中在高风险资产。'));recs.push(T('Diversify into bonds, gold or Malaysian stocks.','分散到债券、黄金或马来西亚股票。'));}
+  if(S.debt>S.income*0.5){notes.push(T('Your debt is high compared with monthly income.','你的债务相对月收入偏高。'));recs.push(T('Put spare cash toward paying down debt first.','优先用多余现金偿还债务。'));}
+  if(S.income-exp<0){notes.push(T('Expenses exceed income.','支出超过了收入。'));recs.push(T('Review your budget and cut non-essentials first.','检查预算,先削减非必要开支。'));}
+  if(!notes.length){notes.push(T('Your finances look balanced.','你的财务状况比较均衡。'));recs.push(T('Keep growing your emergency fund and diversified investing.','继续增加紧急基金并保持分散投资。'));}
+  return {notes,recs};
+}
+function botReply(q){
+  const zh=/[\u4e00-\u9fa5]/.test(q), t=q.toLowerCase(), T=(en,cn)=>zh?cn:en, has=(...k)=>k.some(x=>t.includes(x));
+  const sc=healthScore();
+  if(has('analy','分析','review','advice','建议','how am i','怎么样')){const a=coachAnalyze(zh);return T('📊 Analysis\n','📊 分析\n')+a.notes.join(' ')+T('\n\n💡 Recommendation\n','\n\n💡 建议\n')+a.recs.join(' ')+T('\n\nEducational feedback only, not professional advice.','\n\n仅为教育性反馈,不构成专业理财建议。');}
+  if(has('score','分数','health','健康'))return T(`Your Financial Health Score is ${sc}/100 (${scoreLabel(sc)}). It weighs savings, emergency fund, debt, spending, diversification and cash flow.`,`你的财务健康分是 ${sc}/100。它综合了储蓄、紧急基金、债务、支出、投资分散度和现金流。`);
+  if(has('emergency','紧急','应急'))return T(`An emergency fund should cover 3-6 months of expenses. Yours: ${fmt(S.emergencyFund)}. Target: ${fmt(totalExpenses()*3)}+.`,`紧急基金应覆盖3-6个月的支出。你现在有 ${fmt(S.emergencyFund)},目标至少 ${fmt(totalExpenses()*3)}。`);
+  if(has('debt','credit','债','信用卡'))return T(`Your debt is ${fmt(S.debt)} and grows ~2% each month. Paying credit cards in full avoids interest.`,`你的债务是 ${fmt(S.debt)},每月约增长2%利息。信用卡全额还款可避免利息。`);
+  if(has('invest','stock','投资','股'))return T('Diversification spreads risk: mix bonds (low risk), gold/Malaysian stocks (medium) and tech (high). Avoid panic-selling in crashes.','分散投资可降低风险:债券(低)、黄金/马股(中)、科技股(高)。市场下跌时避免恐慌卖出。');
+  if(has('budget','预算','save','储蓄','存'))return T(`You earn ${fmt(S.income)} and spend ${fmt(totalExpenses())}, leaving ${fmt(S.income-totalExpenses())}/month. Try the 6 Jars split: 55% needs, 10% each play/education/investing/savings, 5% give.`,`你月收入 ${fmt(S.income)},支出 ${fmt(totalExpenses())},每月结余 ${fmt(S.income-totalExpenses())}。可尝试6罐法:55%必需、玩乐/教育/投资/储蓄各10%、5%捐赠。`);
+  if(has('inflation','通胀','通货'))return T('Inflation makes everyday costs rise, so idle cash buys less over time. Investments that outpace inflation help protect value.','通货膨胀让日常花费上涨,闲置现金购买力下降。跑赢通胀的投资有助保值。');
+  return T('I can help with: analysing your finances, budget, emergency fund, debt, investing, inflation or your score. Try a suggestion below!','我可以帮你:分析财务、预算、紧急基金、债务、投资、通胀或健康分。试试下面的建议吧!');
+}
+function addMsg(text,who){const m=document.createElement('div');m.className='msg '+who;m.textContent=text;const b=document.getElementById('chatMsgs');b.appendChild(m);b.scrollTop=b.scrollHeight;return m;}
+function sendChat(q){
+  q=(q||'').trim(); if(!q)return; addMsg(q,'me');
+  const d=addMsg('','bot'); d.innerHTML='<span class="dots"><span></span><span></span><span></span></span>';
+  setTimeout(()=>{d.textContent=botReply(q);document.getElementById('chatMsgs').scrollTop=1e6;},650);
+}
+function initChat(){
+  const panel=document.getElementById('chatPanel'),fab=document.getElementById('chatFab'),inp=document.getElementById('chatInput');
+  const toggle=()=>{panel.classList.toggle('open'); if(panel.classList.contains('open')&&!panel.dataset.hi){panel.dataset.hi=1;addMsg("Hi! I'm your AI Financial Coach 👋 Ask me about your budget, debt, investing or score. 你也可以用中文提问。",'bot');}};
+  fab.onclick=toggle; document.getElementById('chatClose').onclick=toggle;
+  document.getElementById('chatSend').onclick=()=>{sendChat(inp.value);inp.value='';};
+  inp.onkeydown=e=>{if(e.key==='Enter'){sendChat(inp.value);inp.value='';}};
+  document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>sendChat(b.dataset.q));
+}
+
+function renderProgress(c){
+  document.getElementById('pageSub').textContent='Your learning & gameplay journey';
+  const lvl = levelFromXp(S.xp); const nextXp = lvl*60;
+  const badgeList = {save1:'🏆 First Savings Goal',ef1:'🏆 Emergency Fund Builder',div1:'🏆 Diversification Master',debt1:'🏆 Debt Free',mkt1:'🏆 Market Survivor',strat1:'🏆 Financial Strategist'};
+  c.innerHTML = `<div class="grid">
+    <div class="card"><div class="stat-label">Level</div><div class="stat-val">${lvl} — ${LEVELS[lvl-1]}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,S.xp%60/60*100)}%"></div></div><div class="small">${S.xp} XP</div></div>
+    <div class="card"><div class="stat-label">Lessons Completed</div><div class="stat-val">${S.lessonsDone.length}/${LESSONS.length}</div></div>
+    <div class="card"><div class="stat-label">Scenarios Faced</div><div class="stat-val">${S.scenariosDone}</div></div>
+    <div class="card"><div class="stat-label">Financial Health</div><div class="stat-val">${healthScore()}/100</div></div>
+  </div>
+  <div class="card section"><h3>Badges</h3>${S.badges.length? S.badges.map(b=>`<span class="chip">${badgeList[b]}</span>`).join(' '):'<p class="small">No badges yet — keep playing!</p>'}</div>
+  <div class="card section"><h3>Financial Mentorship <span class="badge mid">COMING SOON</span></h3>
+    <p class="small">Users who reach an advanced level may receive guidance from finance students or qualified financial professionals.</p>
+    <div class="row" style="margin-top:10px">
+      <div class="card col"><b>Finance Student Mentor</b><p class="small">Basic financial concepts, budgeting, investment learning, study guidance.</p></div>
+      <div class="card col"><b>Qualified Professional</b><p class="small">Financial planning education, investment concepts, risk management, personal finance guidance.</p></div>
+    </div></div>`;
+}
+
+function renderSettings(c){
+  document.getElementById('pageSub').textContent='Manage your save data';
+  c.innerHTML = `<div class="card"><h3>Reset Game</h3><p class="small">Clears all progress and returns you to the setup screen.</p>
+    <button class="btn danger" id="resetBtn">Reset Game</button></div>
+    <div class="card section"><p class="small">This game is designed for financial education and simulation purposes only. It does not provide personalised financial advice or guarantee investment results.</p></div>`;
+  c.querySelector('#resetBtn').onclick=()=>{ if(confirm('Reset all progress?')){ localStorage.removeItem('wangwise_save'); location.reload(); } };
+}
+
+/* ============ BOOT ============ */
+function boot(){
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('app').classList.add('show');
+  render();
+}
+initChat();
+if(load()){ boot(); }
+</script>
+</body>
+</html>
