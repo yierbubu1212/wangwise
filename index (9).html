@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wang Wise — Financial Life Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1020; --navy2:#121A33; --teal:#2DE2B5; --teal-l:rgba(45,226,181,.12);
+  --warn:#F5A94E; --warn-l:rgba(245,169,78,.13); --danger:#FF6B6B; --danger-l:rgba(255,107,107,.13);
+  --violet:#7C6CFF; --cyan:#38BDF8;
+  --bg:#070B18; --card:rgba(255,255,255,.045); --text:#EAF0FF; --sub:#8C97B8; --line:rgba(255,255,255,.09);
+  --radius:18px; --grad:linear-gradient(135deg,#7C6CFF,#38BDF8 60%,#2DE2B5);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);min-height:100vh;
+  background:radial-gradient(900px 500px at 85% -10%,rgba(124,108,255,.22),transparent 60%),radial-gradient(700px 500px at -10% 20%,rgba(56,189,248,.16),transparent 60%),var(--bg);background-attachment:fixed;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0 0 6px;letter-spacing:-.02em;font-weight:700}
+h2{font-size:26px} h3{font-size:16px}
+button{font-family:inherit;cursor:pointer}
+p{line-height:1.6}
+#app{display:none}
+#app.show{display:flex;min-height:100vh}
+.sidebar{width:236px;background:rgba(10,14,30,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-right:1px solid var(--line);padding:24px 14px;flex-shrink:0;position:sticky;top:0;height:100vh}
+.brand{font-size:20px;font-weight:800;margin-bottom:30px;padding:0 10px;display:flex;align-items:center;gap:10px;letter-spacing:-.02em}
+.brand:before{content:"";width:28px;height:28px;border-radius:9px;background:var(--grad);box-shadow:0 0 22px rgba(56,189,248,.55)}
+.brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--sub);font-size:14px;font-weight:500;margin-bottom:4px;background:none;border:1px solid transparent;width:100%;text-align:left;transition:.2s}
+.nav-item svg,.bottomnav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:linear-gradient(135deg,rgba(124,108,255,.25),rgba(56,189,248,.12));border-color:rgba(124,108,255,.4);box-shadow:0 0 24px rgba(124,108,255,.18)}
+.main{flex:1;padding:30px 36px 110px;max-width:1160px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--sub);backdrop-filter:blur(10px)}
+.pill b{color:var(--teal)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.25);transition:.25s}
+.grid>.card:hover{transform:translateY(-3px);border-color:rgba(124,108,255,.45)}
+.stat-label{font-size:12px;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}
+.stat-val{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.section{margin-top:22px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.col{flex:1;min-width:260px}
+.btn{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:600;transition:.2s}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.13)}
+.btn.teal{background:var(--grad);color:#06101F;border:none;box-shadow:0 6px 22px rgba(56,189,248,.3)}
+.btn.warn{background:var(--warn);color:#1a1000;border:none}
+.btn.danger{background:var(--danger);color:#200;border:none}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em}
+.badge.low{background:var(--teal-l);color:var(--teal)}
+.badge.mid{background:var(--warn-l);color:var(--warn)}
+.badge.high{background:var(--danger-l);color:var(--danger)}
+.bar-track{background:rgba(255,255,255,.08);border-radius:999px;height:8px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;background:var(--grad);border-radius:999px;transition:width .6s}
+.hidden{display:none!important}
+input[type=number],select{padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:var(--text);width:100%;outline:none}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+label{font-size:12px;color:var(--sub);display:block;margin:12px 0 5px}
+.quiz-opt{display:block;width:100%;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;color:var(--text);transition:.2s}
+.quiz-opt:hover:not(:disabled){border-color:var(--violet);background:rgba(124,108,255,.1)}
+.quiz-opt.correct{background:var(--teal-l);border-color:var(--teal)}
+.quiz-opt.wrong{background:var(--danger-l);border-color:var(--danger)}
+.setup-card{border:1px solid var(--line);border-radius:var(--radius);padding:18px;cursor:pointer;background:rgba(255,255,255,.04);transition:.25s}
+.setup-card:hover{transform:translateY(-3px)}
+.setup-card.sel{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,.18),0 0 30px rgba(56,189,248,.2)}
+.timeline-item{border-left:2px solid var(--violet);padding:4px 0 4px 16px;margin-bottom:10px;font-size:14px;color:var(--text);position:relative}
+.timeline-item:before{content:"";position:absolute;left:-6px;top:10px;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.small{font-size:12.5px;color:var(--sub)}
+.chip{display:inline-block;background:rgba(124,108,255,.15);border:1px solid rgba(124,108,255,.35);border-radius:999px;padding:5px 12px;font-size:12.5px;margin:0 6px 6px 0}
+.hero{display:flex;align-items:center;gap:26px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(124,108,255,.22),rgba(56,189,248,.1));margin-bottom:14px}
+.ring{position:relative;width:132px;height:132px}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:800}
+.ring b small{font-size:11px;color:var(--sub);font-weight:500}
+.bottomnav{display:none}
+#toast{position:fixed;top:20px;left:50%;transform:translate(-50%,-20px);background:rgba(18,26,51,.95);border:1px solid var(--line);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;opacity:0;transition:.3s;z-index:999;max-width:90vw;backdrop-filter:blur(12px)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+.asset-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line)}
+/* Chat widget */
+#chatFab{position:fixed;right:24px;bottom:24px;width:60px;height:60px;border-radius:50%;border:none;background:var(--grad);box-shadow:0 10px 34px rgba(124,108,255,.55);z-index:80;display:flex;align-items:center;justify-content:center;transition:.25s}
+#chatFab:hover{transform:scale(1.08)}
+#chatFab svg{width:26px;height:26px;stroke:#06101F;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#chatPanel{position:fixed;right:24px;bottom:98px;width:370px;height:540px;max-height:calc(100vh - 130px);background:rgba(12,17,36,.92);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.6);z-index:81;display:none;flex-direction:column;overflow:hidden}
+#chatPanel.open{display:flex;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.chat-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(124,108,255,.25),rgba(56,189,248,.1))}
+.chat-head i{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal)}
+.chat-head b{font-size:15px;flex:1}
+.chat-head button{background:none;border:none;color:var(--sub);font-size:22px;line-height:1}
+#chatMsgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.55;white-space:pre-line;animation:pop .2s ease}
+.msg.bot{background:rgba(255,255,255,.07);border-bottom-left-radius:5px;align-self:flex-start}
+.msg.me{background:var(--grad);color:#06101F;border-bottom-right-radius:5px;align-self:flex-end;font-weight:500}
+.chat-chips{padding:0 14px 8px;display:flex;gap:6px;flex-wrap:wrap}
+.chat-chips button{background:rgba(124,108,255,.14);border:1px solid rgba(124,108,255,.35);color:var(--text);border-radius:999px;padding:6px 12px;font-size:12px}
+.chat-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.chat-in input{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.05);color:var(--text);outline:none;font-family:inherit}
+.chat-in button{width:42px;height:42px;border-radius:50%;border:none;background:var(--grad);color:#06101F;font-size:17px;font-weight:700}
+.dots span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--sub);animation:blink 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+@media (max-width:820px){
+  .sidebar{display:none}
+  .main{padding:20px 16px 130px;max-width:none}
+  h2{font-size:22px}
+  .bottomnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,30,.9);backdrop-filter:blur(18px);border-top:1px solid var(--line);z-index:50;padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));overflow-x:auto}
+  .bottomnav button{flex:1;min-width:58px;background:none;border:none;color:var(--sub);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px}
+  .bottomnav button.active{color:var(--teal)}
+  #app.show{flex-direction:column}
+  #chatFab{right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:54px;height:54px}
+  #chatPanel{right:0;left:0;bottom:0;width:100%;height:82vh;max-height:none;border-radius:22px 22px 0 0}
+}
+.main{max-width:1280px;min-width:0}.carwrap,.carousel{min-width:0;max-width:100%}@media(max-width:820px){.topbar{flex-wrap:wrap;gap:10px}.tb-right{justify-content:flex-start}.pill.hp .tag{display:none}}
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--grad);color:#06101F;font-weight:800;flex-shrink:0}
+.center{text-align:center}
+/* topbar */
+.tb-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill.hp{display:flex;align-items:center;gap:10px;padding:7px 14px}
+.hpmid{width:110px}.hpmid small{font-size:10px;color:var(--sub)}
+.hpmid .bar-track{margin-top:3px;height:6px}
+.pill .tag{background:var(--teal-l);color:var(--teal);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700}
+.pill.user{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px}
+.pill.user .av{width:32px;height:32px;font-size:12px}
+.pill.user b{display:block;font-size:13px;color:var(--text)}.pill.user small{font-size:11px}
+/* signup */
+#setupScreen{position:fixed;inset:0;z-index:100;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px;background:#CFE6FA;color:#15306B}
+.su-bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1}
+.su-brand{position:fixed;top:22px;left:28px;font-weight:900;font-size:26px;color:#15306B;letter-spacing:-.02em;line-height:1}
+.su-brand em{font-style:normal;color:#F2B531;display:block}
+.su-brand small{display:block;font-size:11px;font-weight:600;letter-spacing:.02em;margin-top:6px;color:#3C5A99}
+.su-tag{position:fixed;top:26px;right:30px;text-align:right;font-style:italic;font-family:"Segoe Script","Brush Script MT",cursive;color:#15306B;font-size:16px;line-height:1.25}
+.su-tag:after{content:"";display:block;height:3px;background:#F2B531;border-radius:3px;margin-top:6px}
+.su-card{width:100%;max-width:400px;background:rgba(255,255,255,.93);border-radius:22px;padding:26px;box-shadow:0 24px 60px rgba(30,70,140,.25);margin:60px 0 30px}
+.su-h{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.su-h h1{font-size:22px;color:#15306B;margin:0}.su-h p{margin:2px 0 0;font-size:12px;color:#5B6E96;line-height:1.4}
+.ic{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.ic.y{background:#FBE6B0}.ic.b{background:#CFE0F7}.ic.p{background:#E1DBFA}.ic.g{background:#CFEBD6}
+.su-row{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.su-row label{margin:0 0 4px;font-size:12px;font-weight:700;color:#15306B}
+.su-row>div{flex:1}
+.su-row input{width:100%;background:#fff;border:1px solid #D3DDF0;color:#15306B;padding:10px 12px}
+.su-row input::placeholder{color:#9AA8C6}
+.su-btn{width:100%;margin-top:6px;background:#2A5BA5;color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;box-shadow:0 8px 20px rgba(42,91,165,.35)}
+.su-btn:hover{background:#244F92}
+#suErr{color:#D6503F;font-size:12.5px;min-height:18px;margin:8px 0 0}
+.su-note{font-size:11px;color:#6A7BA0;margin:8px 0 0;line-height:1.5}
+/* learn path */
+.path{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:14px 0}
+.path-head{text-align:center;margin-top:6px}
+.path-card{display:flex;align-items:center;gap:14px;width:calc(100% - 44px);text-align:left;color:var(--text);border:1px solid color-mix(in srgb,var(--mc) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--mc) 32%,#10162B),#10162B);border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);transition:.25s}
+.path-card:nth-child(even){align-self:flex-end}
+.path-card:hover{transform:translateY(-3px) scale(1.01)}
+.pic{width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
+.ptxt{flex:1}.ptxt b{display:block;font-size:15px}.ptxt small{color:var(--sub);font-size:12px}
+.ringw{position:relative;width:46px;height:46px;flex-shrink:0}
+.ringtxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.mod-wrap{display:grid;grid-template-columns:190px 1fr;gap:22px;align-items:start}
+.mod-nav{display:flex;flex-direction:column;gap:2px;position:sticky;top:20px}
+.mod-nav button{background:none;border:none;border-left:3px solid transparent;color:var(--cyan);text-align:left;padding:9px 12px;font-size:14px}
+.mod-nav button.on{border-left-color:var(--teal);color:var(--text);font-weight:700}
+.mod-nav button:hover{background:rgba(255,255,255,.04)}
+.mod-nav .back{color:var(--sub);font-size:13px;margin-bottom:8px}
+details.topic{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,.03)}
+details.topic summary{cursor:pointer;font-weight:600}
+.prac{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line)}
+.statchip{display:inline-block;margin:0 8px 8px 0;padding:6px 12px;border-radius:999px;background:rgba(124,108,255,.14);font-size:12.5px}
+/* finance */
+.fin-head{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-bottom:10px}
+.dots-nav{display:flex;gap:6px}.dots-nav button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font-size:12px}
+.dots-nav button.on{background:var(--grad);color:#06101F;border:none;font-weight:700}
+.carwrap{position:relative}
+.carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;align-items:flex-start;scrollbar-width:thin;padding-bottom:6px}
+.cpage{flex:0 0 100%;min-width:0;scroll-snap-align:start;padding-right:2px}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.fcard{border-top:3px solid var(--ac)}
+.fcard h3{margin-bottom:2px}
+.mini{display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px}
+.mini b{white-space:nowrap}.mini.total{background:var(--teal-l);border-color:transparent;font-weight:700}
+.seg{display:flex;gap:3px;background:rgba(255,255,255,.06);border-radius:999px;padding:3px;margin:10px 0}
+.seg button{flex:1;border:none;background:none;color:var(--sub);border-radius:999px;padding:6px 4px;font-size:12px;font-weight:600}
+.seg button.on{background:var(--grad);color:#06101F}
+.ghex{display:flex;align-items:center;gap:12px;margin:10px 0}
+.hex{width:54px;height:60px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--teal);color:#06101F;font-size:26px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.letters span{display:inline-flex;width:24px;height:24px;border-radius:50%;align-items:center;justify-content:center;font-size:11px;margin-right:4px;background:rgba(255,255,255,.07);color:var(--sub)}
+.letters span.on{background:var(--teal);color:#06101F;font-weight:700}
+.chk{display:flex;justify-content:space-between;font-size:12.5px;margin-top:7px}
+.ok{color:var(--teal)}.mid{color:var(--warn)}.bad{color:var(--danger)}
+.nextbtn{position:absolute;right:-8px;top:42%;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:rgba(18,26,51,.95);color:var(--text);font-size:18px;z-index:5}
+.hint{text-align:center;font-size:12px;color:var(--sub);margin:8px 0 14px}
+/* invest */
+.banner{background:linear-gradient(120deg,rgba(124,108,255,.35),rgba(56,189,248,.18)),repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 14px,transparent 14px 30px);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.banner h2{font-size:28px}
+.ticks{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-bottom:14px}
+.tick{display:flex;justify-content:space-between;align-items:center;padding:12px 14px}
+.tick b{display:block;font-size:17px}.tick small{font-size:11.5px;color:var(--sub)}
+.up{color:var(--teal)}.dn{color:var(--danger)}
+.inv-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:820px){.inv-grid{grid-template-columns:1fr 1fr}.inv-grid .wide{grid-column:span 2}}
+@media(min-width:1300px){.inv-grid{grid-template-columns:1.7fr 1fr 1fr}.inv-grid .wide{grid-column:auto}}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;color:var(--sub);padding:8px 12px;font-size:13px;font-weight:600;white-space:nowrap}
+.tabs button.on{color:var(--text);border-bottom-color:var(--cyan)}
+.rng{display:flex;gap:4px}.rng button{border:none;background:rgba(255,255,255,.06);color:var(--sub);border-radius:8px;padding:4px 9px;font-size:11.5px}
+.rng button.on{background:var(--cyan);color:#06101F;font-weight:700}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:12px}
+.kgrid div{background:rgba(255,255,255,.04);border-radius:12px;padding:10px 12px}.kgrid small{display:block;color:var(--sub);font-size:11px}.kgrid b{font-size:14px}
+.news{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.news .th{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,rgba(124,108,255,.35),rgba(56,189,248,.25));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.news b{font-size:13.5px;line-height:1.35;display:block}
+.donutw{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.donutc{position:relative;width:130px;height:130px;flex-shrink:0}
+.donutc b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px}.donutc small{font-size:10px;color:var(--sub);font-weight:500}
+.leg{font-size:12.5px;flex:1;min-width:130px}.leg div{display:flex;justify-content:space-between;margin-bottom:5px}.leg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+.seg2{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:6px}
+.seg2 button{flex:1;border:none;background:none;color:var(--sub);padding:9px;font-weight:700}
+.seg2 button.on{background:var(--grad);color:#06101F}
+.tip{background:var(--warn-l);border-radius:12px;padding:10px 12px;font-size:12.5px;margin-top:12px}
+.upd{margin-top:14px;background:var(--warn-l);border-radius:12px;padding:12px 16px;font-size:13px}
+/* connection */
+.conn{max-width:900px;margin:0 auto}
+.searchbox{display:flex;align-items:center;gap:8px;max-width:560px;margin:6px auto 8px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 18px}
+.searchbox input{border:none;background:none;box-shadow:none;padding:8px 0;color:var(--text);flex:1;outline:none;font-family:inherit;font-size:15px}
+.searchbox input:focus{box-shadow:none}
+.searchbox button{border:none;background:rgba(255,255,255,.08);color:var(--sub);width:30px;height:30px;border-radius:50%}
+.conn-grid{display:grid;grid-template-columns:320px 1fr;gap:14px;margin-top:14px}
+.frow{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.frow:hover,.frow.on{background:rgba(124,108,255,.12);border-color:rgba(124,108,255,.35)}
+.frow b{display:block;font-size:14px}.frow small{font-size:11.5px;color:var(--sub)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--sub)}.dot.on{background:var(--teal)}
+.chatcard{display:flex;flex-direction:column;height:480px;padding:0;overflow:hidden}
+.chead{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+#cmsgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.cin{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.cin input{flex:1;border-radius:999px;padding:11px 16px}
+.cin button{width:42px;height:42px;border-radius:50%;border:none;background:var(--grad);color:#06101F;font-weight:700}
+.backb{display:none;background:none;border:none;color:var(--text);font-size:22px}
+/* ai widget */
+#chatFab{padding:0;overflow:visible}
+#chatFab svg{width:34px;height:34px;stroke:none;fill:#06101F}
+#chatFab:after{content:"";position:absolute;right:3px;bottom:3px;width:13px;height:13px;border-radius:50%;background:#2DE2B5;border:2px solid #0B1020}
+.chat-head .av{width:38px;height:38px}.chat-head .av svg{width:26px;height:26px;fill:#06101F}
+.chat-head small{display:block;font-size:11px;color:var(--sub);font-weight:400}
+.chat-head .back{font-size:24px}
+.agree{align-self:flex-end;background:none;border:1px solid var(--cyan);color:var(--text);border-radius:999px;padding:7px 14px;font-size:13px}
+.agree:hover{background:rgba(56,189,248,.15)}
+.chat-in input:disabled,.chat-in button:disabled{opacity:.5}
+@media(max-width:1100px){.fgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){
+  .fgrid{grid-template-columns:1fr}.nextbtn{display:none}
+  .mod-wrap{grid-template-columns:1fr}.mod-nav{flex-direction:row;overflow-x:auto;position:static;border-bottom:1px solid var(--line)}
+  .mod-nav button{border-left:none;border-bottom:3px solid transparent;white-space:nowrap}.mod-nav button.on{border-bottom-color:var(--teal)}
+  .conn-grid{grid-template-columns:1fr}.conn.chatting #flist{display:none}.conn:not(.chatting) .chatcard{display:none}.backb{display:block}
+  .hpmid{width:70px}.tb-right .pill.user div{display:none}.pill.user{padding:6px}
+  .path-card{width:calc(100% - 20px)}
+  .su-brand{font-size:20px;left:16px;top:14px}.su-tag{display:none}
+}
+/* ===== PRO VISUAL LAYER ===== */
+:root{--font:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;--fh:Sora,Inter,-apple-system,"Segoe UI","PingFang SC",sans-serif}
+body{font-family:var(--font);font-variant-numeric:tabular-nums}
+h1,h2,h3,.brand,.stat-val{font-family:var(--fh)}
+::selection{background:rgba(124,108,255,.45)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:10px}::-webkit-scrollbar-track{background:transparent}
+body:before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse at 50% 20%,#000 20%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 20%,#000 20%,transparent 75%)}
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-orbs i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:float 22s ease-in-out infinite alternate}
+.bg-orbs i:nth-child(1){width:520px;height:520px;background:#5B4BFF;top:-160px;right:-80px}
+.bg-orbs i:nth-child(2){width:460px;height:460px;background:#0EA5E9;bottom:-180px;left:12%;animation-duration:28s;opacity:.35}
+.bg-orbs i:nth-child(3){width:340px;height:340px;background:#10D9A8;top:42%;left:46%;animation-duration:34s;opacity:.16}
+@keyframes float{from{transform:translate(0,0) scale(1)}to{transform:translate(-60px,50px) scale(1.12)}}
+#app{position:relative;z-index:1}
+/* cards: glass + gradient border + cursor spotlight */
+.card{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border-color:transparent;box-shadow:0 18px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+.card:after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.04) 40%,rgba(124,108,255,.28));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);pointer-events:none}
+.card:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,0),rgba(124,108,255,.2),transparent 65%)}
+.card:hover:before{opacity:1}
+.card.chatcard,.card .card{box-shadow:none}
+.stat-val{background:linear-gradient(180deg,#fff,#b9c5ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+.up{text-shadow:0 0 16px rgba(45,226,181,.45)}.dn{text-shadow:0 0 16px rgba(255,107,107,.4)}
+/* sidebar */
+.sidebar{display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(14,19,40,.85),rgba(8,11,26,.9))}
+.brand{font-size:21px}.brand:before{animation:glow 3s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 14px rgba(56,189,248,.4)}to{box-shadow:0 0 30px rgba(124,108,255,.8)}}
+.nav-item{position:relative;overflow:hidden}
+.nav-item svg{transition:transform .25s}.nav-item:hover svg{transform:translateX(2px) scale(1.12)}
+.nav-item.active:before{content:"";position:absolute;left:0;top:20%;bottom:20%;width:3px;border-radius:3px;background:var(--grad);box-shadow:0 0 12px var(--cyan)}
+.side-foot{margin-top:auto;padding:14px;border-radius:16px;background:linear-gradient(145deg,rgba(124,108,255,.18),rgba(56,189,248,.08));border:1px solid rgba(124,108,255,.28)}
+.side-foot small{color:var(--sub);font-size:11px;display:block}.side-foot b{font-size:13px;display:block;margin:2px 0 6px}
+#pageTitle{background:linear-gradient(180deg,#fff,#aab6dd);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:28px}
+.pill{box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+/* progress shimmer */
+.bar-fill{position:relative;overflow:hidden;box-shadow:0 0 12px rgba(56,189,248,.45)}
+.bar-fill:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:translateX(-100%);animation:shim 2.6s infinite}
+@keyframes shim{to{transform:translateX(100%)}}
+/* buttons */
+.btn{position:relative;overflow:hidden}
+.btn:after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);transition:left .6s}
+.btn:hover:after{left:130%}.btn:active{transform:scale(.97)}
+.btn.teal{box-shadow:0 8px 28px rgba(56,189,248,.38),inset 0 1px 0 rgba(255,255,255,.4)}
+.btn.teal:hover{box-shadow:0 12px 36px rgba(124,108,255,.5)}
+/* hero ring */
+.hero{overflow:hidden}
+.hero:after{background:linear-gradient(145deg,rgba(124,108,255,.5),rgba(56,189,248,.15) 50%,rgba(45,226,181,.35))}
+.ring:before{content:"";position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(from 0deg,#7C6CFF,#38BDF8,#2DE2B5,#7C6CFF);filter:blur(20px);opacity:.38;animation:spin 9s linear infinite}
+.ring svg{position:relative;filter:drop-shadow(0 0 8px rgba(45,226,181,.5))}.ring b{z-index:1;font-family:var(--fh)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.enter .ring circle:nth-child(2){animation:ringdraw 1.4s cubic-bezier(.2,.7,.2,1)}
+@keyframes ringdraw{from{stroke-dashoffset:326.7}}
+/* entrance */
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+.enter>*,.enter .grid>.card,.enter .fgrid>.card,.enter .ticks>.card,.enter .path-card{animation:rise .6s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*60ms)}
+/* chart */
+.drawline{stroke-dasharray:1;stroke-dashoffset:0;animation:draw 1s ease-out}
+@keyframes draw{from{stroke-dashoffset:1}}
+.tick{transition:.25s}.tick:hover{transform:translateY(-3px)}
+.banner{position:relative;overflow:hidden}
+.banner:before{background:radial-gradient(500px circle at 85% 0,rgba(45,226,181,.18),transparent 60%);opacity:1!important}
+.path-card{position:relative;overflow:hidden}
+.path-card:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.1) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s}
+.path-card:hover:before{transform:translateX(120%)}
+.quiz-opt{transition:.2s}.quiz-opt:hover:not(:disabled){transform:translateX(4px)}
+.msg.me{box-shadow:0 6px 18px rgba(56,189,248,.25)}
+/* AI widget */
+#chatFab:before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid rgba(124,108,255,.7);animation:ping 2.4s ease-out infinite}
+@keyframes ping{from{transform:scale(1);opacity:.9}to{transform:scale(1.7);opacity:0}}
+#chatPanel{box-shadow:0 30px 90px rgba(0,0,0,.65),0 0 0 1px rgba(124,108,255,.25)}
+/* toast + confetti */
+#toast{border:1px solid rgba(124,108,255,.4);box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 24px rgba(124,108,255,.25)}
+.cf{position:fixed;left:50%;top:70px;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:1000;animation:cf 1.3s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes cf{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+/* setup */
+.su-card{animation:rise .9s cubic-bezier(.2,.7,.2,1);box-shadow:0 30px 80px rgba(30,70,140,.32),0 0 0 1px rgba(255,255,255,.6)}
+.su-bg ellipse{animation:drift 26s ease-in-out infinite alternate}
+.su-bg ellipse:nth-of-type(2){animation-duration:34s}
+@keyframes drift{to{transform:translateX(90px)}}
+.bob{animation:bob 4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.su-btn{transition:.25s}.su-btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(42,91,165,.45)}
+.su-row input:focus{border-color:#2A5BA5;box-shadow:0 0 0 3px rgba(42,91,165,.15)}
+@media(max-width:820px){.card:before{display:none}.bg-orbs i{filter:blur(70px)}#pageTitle{font-size:23px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><i></i><i></i><i></i></div>
+<div id="setupScreen">
+  <svg class="su-bg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="suSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BDDFFA"/><stop offset="1" stop-color="#EDF6FD"/></linearGradient>
+      <linearGradient id="suB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FBDE8"/><stop offset="1" stop-color="#D3E7F8"/></linearGradient>
+      <pattern id="suW" width="14" height="16" patternUnits="userSpaceOnUse"><rect x="3" y="4" width="7" height="8" fill="#fff" opacity=".55"/></pattern>
+    </defs>
+    <rect width="1200" height="700" fill="url(#suSky)"/>
+    <ellipse cx="230" cy="110" rx="90" ry="24" fill="#fff" opacity=".75"/><ellipse cx="930" cy="80" rx="110" ry="26" fill="#fff" opacity=".65"/>
+    <g fill="url(#suB)"><rect x="420" y="230" width="80" height="470"/><rect x="520" y="300" width="70" height="400"/><rect x="760" y="200" width="90" height="500"/><rect x="870" y="320" width="80" height="380"/><rect x="330" y="360" width="70" height="340"/></g>
+    <g fill="url(#suW)"><rect x="420" y="230" width="80" height="470"/><rect x="520" y="300" width="70" height="400"/><rect x="760" y="200" width="90" height="500"/><rect x="870" y="320" width="80" height="380"/><rect x="330" y="360" width="70" height="340"/></g>
+    <rect x="40" y="430" width="320" height="270" fill="#E8DFD2"/><polygon points="40,430 200,370 360,430" fill="#D9CDBB"/><rect x="190" y="470" width="160" height="26" rx="4" fill="#2A5BA5"/><text x="270" y="489" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="sans-serif">UNIVERSITY</text>
+    <rect x="1010" y="400" width="190" height="300" fill="#CFE0F2"/><rect x="1030" y="470" width="120" height="56" rx="8" fill="#2A5BA5"/><text x="1090" y="507" text-anchor="middle" font-size="24" font-weight="800" fill="#fff" font-family="sans-serif">BANK</text>
+    <rect y="640" width="1200" height="60" fill="#E7DAC7"/>
+    <g class="bob"><g transform="translate(8 380)"><circle cx="70" cy="60" r="38" fill="#2B2320"/><rect x="22" y="92" width="96" height="150" rx="38" fill="#E9E3DB"/><rect x="30" y="100" width="82" height="130" rx="24" fill="#1F2A44"/><rect x="38" y="112" width="66" height="16" rx="8" fill="#2B3A5E"/><rect x="8" y="110" width="24" height="100" rx="12" fill="#E9E3DB"/><rect x="108" y="110" width="24" height="100" rx="12" fill="#E9E3DB"/><rect x="34" y="236" width="30" height="80" fill="#1D2B50"/><rect x="76" y="236" width="30" height="80" fill="#1D2B50"/></g></g>
+  </svg>
+  <div class="su-brand">WANG<em>WISE</em><small>Small Decisions. Big Future.</small></div>
+  <div class="su-tag">Your Financial<br>Journey Begins Here!</div>
+  <div class="su-card">
+    <div class="su-h"><span class="ic y">👤</span><div><h1>Create Your Profile</h1><p>Tell us a little about yourself to get started on your financial journey!</p></div></div>
+    <div class="su-row"><span class="ic b">👤</span><div><label for="suName">Name</label><input id="suName" type="text" placeholder="Enter your name" autocomplete="off"></div></div>
+    <div class="su-row"><span class="ic p">📅</span><div><label for="suAge">Age</label><input id="suAge" type="number" min="10" max="100" placeholder="Enter your age"></div></div>
+    <div class="su-row"><span class="ic g">💰</span><div><label for="suSal">Salary per month</label><input id="suSal" type="number" min="0" placeholder="Enter your monthly salary (RM)"></div></div>
+    <div class="su-row"><span class="ic y">👛</span><div><label for="suCash">Starting Cash</label><input id="suCash" type="number" min="0" placeholder="Enter your starting cash (RM)"></div></div>
+    <button class="su-btn" id="startBtn">Start Game →</button>
+    <p id="suErr"></p>
+    <p class="su-note">This game is designed for financial education and simulation purposes only. It does not provide personalised financial advice or guarantee investment results. All money is virtual.</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar">
+    <div class="brand">Wang <span>Wise</span></div>
+    <nav id="navList"></nav>
+    <div class="side-foot" id="sideFoot"></div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div><h2 id="pageTitle">Dashboard</h2><span class="small" id="pageSub"></span></div>
+      <div class="tb-right">
+        <div class="pill hp"><span>❤️</span><div class="hpmid"><small>Financial Health</small><div class="bar-track"><div class="bar-fill" id="hpBar"></div></div></div><b id="hpTxt"></b><span class="tag" id="hpTag"></span></div>
+        <div class="pill" id="monthPill"></div>
+        <div class="pill user"><span class="av" id="uAv"></span><div><b id="uName"></b><small id="uLvl"></small></div></div>
+      </div>
+    </div>
+    <div id="pageContent"></div>
+  </div>
+  <div class="bottomnav" id="bottomNav"></div>
+  <button id="chatFab" aria-label="Open AI coach"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c0-4.6 3.8-7.6 8.5-7.6s8.5 3 8.5 7.6z"/></svg></button>
+  <div id="chatPanel"><div class="chat-head"><button class="back" id="chatClose" aria-label="Close" style="background:none;border:none;color:var(--text)">‹</button><span class="av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c0-4.6 3.8-7.6 8.5-7.6s8.5 3 8.5 7.6z"/></svg></span><b>Wise<small>AI Financial Coach · Online</small></b><i></i></div>
+    <div id="chatMsgs"></div>
+    <div class="chat-chips" id="chatChips"><button data-q="Analyse my finances">Analyse my finances</button><button data-q="分析我的财务">分析我的财务</button><button data-q="How is my score?">My score</button><button data-q="Emergency fund?">Emergency fund</button></div>
+    <div class="chat-in"><input id="chatInput" placeholder="We are here to help you." autocomplete="off"><button id="chatSend" aria-label="Send">➤</button></div></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt=n=>'RM'+Math.round(n).toLocaleString();
+const fmtD=n=>'RM'+(+n).toLocaleString(undefined,{maximumFractionDigits:2});
+const pct=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
+
+/* ============ DATA (edit here) ============ */
+const CATS=['Stocks','Bonds','ETFs','Commodities','Real Estate'];
+const CATCOL={Stocks:'#2DE2B5',Bonds:'#38BDF8',ETFs:'#7C6CFF',Commodities:'#F5A94E','Real Estate':'#F472B6'};
+const ASSETS=[
+ {id:'msia',name:'Malaysian Stock',tk:'MYS',cat:'Stocks',risk:'Medium',yld:4.2,fee:'0.30%',beta:1,vol:.05,blurb:'A basket of established local companies. Steady dividends; moves with the Malaysian economy.'},
+ {id:'tech',name:'Technology Stock',tk:'TCH',cat:'Stocks',risk:'High',yld:0.6,fee:'0.50%',beta:1.7,vol:.09,blurb:'Fast-growing tech companies. Big upside, but big swings too.'},
+ {id:'bond',name:'Government Bond',tk:'GOV',cat:'Bonds',risk:'Low',yld:3.8,fee:'0.10%',beta:.2,vol:.012,blurb:'Lends money to the government for steady, predictable interest.'},
+ {id:'etf',name:'Diversified ETF',tk:'ETF',cat:'ETFs',risk:'Medium',yld:2.1,fee:'0.45%',beta:.8,vol:.04,blurb:'One fund holding many companies — instant diversification.'},
+ {id:'gold',name:'Gold',tk:'GLD',cat:'Commodities',risk:'Medium',yld:0,fee:'0.40%',beta:.6,vol:.035,blurb:'A traditional safe haven. Pays no dividends but often holds value in uncertain times.'},
+ {id:'reit',name:'Property REIT',tk:'REIT',cat:'Real Estate',risk:'Medium',yld:5.0,fee:'0.60%',beta:.7,vol:.045,blurb:'Owns buildings and pays out rental income to investors.'},
+];
+const IDX={klci:{n:'KLCI',v:1585.32,vol:.008,dp:2,m:1},sp:{n:'S&P 500',v:5762.48,vol:.009,dp:2,m:1},nas:{n:'NASDAQ',v:18189.17,vol:.012,dp:2,m:1.4},gold:{n:'Gold (USD/oz)',v:2643.2,vol:.01,dp:2,m:.5},usd:{n:'USD/MYR',v:4.345,vol:.003,dp:4,m:-.1}};
+const NEWS={
+ up:[['Global markets rally on rate-cut hopes','Economy','📈'],['Tech stocks surge as AI demand grows','Market','💻'],['Gold climbs amid geopolitical tension','Commodities','🥇'],['KLCI gains on banking and energy sectors','Local Market','🏙️']],
+ down:[['Markets slide as investors turn cautious','Economy','📉'],['Tech stocks drop on profit-taking','Market','💻'],['Gold edges up as a safe haven','Commodities','🥇'],['KLCI falls amid global uncertainty','Local Market','🏙️']],
+ flat:[['Markets move sideways ahead of data','Economy','⚖️'],['Tech stocks trade in a narrow range','Market','💻'],['Gold steady as dollar holds','Commodities','🥇'],['KLCI little changed in quiet trade','Local Market','🏙️']]};
+const FRIENDS0=[['Aiman Rahman',1],['Mei Ling Tan',1],['Priya Nair',0],['Daniel Lee',1],['Sofia Wong',0]];
+const FCOL=['#7C6CFF','#38BDF8','#2DE2B5','#F5A94E','#F472B6','#FF6B6B'];
+
+const MODULES=[
+ {id:'m1',icon:'💰',color:'#7C6CFF',title:'Personal Finance & Money Management',sub:'Budgeting · Saving · Debt',
+  desc:'Learn how to manage the money that comes in and goes out of your life — the foundation of every other financial skill.',
+  topics:[
+   {t:'Income & Expenses',txt:'Income is money coming in; expenses are money going out. Your goal is to keep income higher than expenses.',ex:'RM3,000 in and RM2,400 out leaves RM600.'},
+   {t:'Budgeting',txt:'A budget is a plan for your money so it does not disappear without you noticing.',ex:'Plan rent, food and fun first, then save what is left.'},
+   {t:'Saving',txt:'Pay yourself first: move money into savings the day you get paid.',ex:'Auto-save RM200 on payday.'},
+   {t:'Emergency Funds',txt:'3-6 months of expenses set aside for real emergencies only.',ex:'Expenses of RM2,000/month → target RM6,000.'},
+   {t:'Credit Card Management',txt:'Spend now, pay later — but unpaid balances charge high interest. Pay in full when you can.',ex:'RM800 unpaid at 18%/year costs about RM12 a month.'},
+   {t:'Debt Management',txt:'Pay the highest-interest debt first and never miss minimum payments.',ex:'Clear a credit card (18%) before a study loan (4%).'},
+   {t:'6 Jars System',txt:'Split income into Necessities 55%, Play 10%, Education 10%, Financial Freedom 10%, Long-term Savings 10%, Give 5%.',ex:'RM2,000 income → RM200 into the Financial Freedom jar.'}],
+  quiz:[
+   {id:'l1',q:'You earn RM3,000/month. Expenses are RM2,400. How much can you potentially save?',opts:['RM300','RM600','RM900','RM1,200'],correct:1,explain:'RM3,000 − RM2,400 = RM600. That is your monthly surplus.'},
+   {id:'l2',q:"In the 6 Jars system, what % goes into 'Financial Freedom' (investing)?",opts:['5%','10%','25%','55%'],correct:1,explain:'10% is set aside for investing and never touched for spending.'},
+   {id:'l3',q:'Your expenses are RM2,000/month. A reasonable emergency fund target (3 months)?',opts:['RM500','RM2,000','RM6,000','RM20,000'],correct:2,explain:'3 × RM2,000 = RM6,000. Build this before taking on investment risk.'},
+   {id:'l4',q:"What's the safest way to use a credit card?",opts:['Pay only the minimum','Pay the full balance every month','Max it out for points','Ignore the statement'],correct:1,explain:'Paying in full avoids interest — the card is a convenience, not a debt trap.'}],
+  practical:[
+   {id:'p11',t:'Save your first RM200',desc:'Move money into a Savings Account or Fixed Deposit.',go:'finances',done:()=>S.savings+S.fd>=200},
+   {id:'p12',t:'Build a 1-month emergency fund',desc:'Emergency fund ≥ one month of your expenses.',go:'finances',done:()=>S.emergencyFund>0&&S.emergencyFund>=totalExpenses()},
+   {id:'p13',t:'Pay a credit card payment on time',desc:'Use the card, then pay at least the minimum in My Finance.',go:'finances',done:()=>!!S.paidOnce}]},
+ {id:'m2',icon:'📈',color:'#38BDF8',title:'Investment & Trading',sub:'Stocks · Risk · Diversification',
+  desc:'Practise investing with virtual money. See how risk, return and your own emotions shape results.',
+  topics:[
+   {t:'Stocks',txt:'A stock is a small slice of ownership in a company. If the company grows, your slice can grow too.',ex:'Buy RM100 of a stock; if it rises 15% it is worth RM115.'},
+   {t:'Simulated Assets',txt:'In this game you can invest in stocks, bonds, ETFs, gold and property funds — all with virtual money.',ex:'Try the Investment page.'},
+   {t:'Bull & Bear Markets',txt:'Bull market = prices rising. Bear market = prices falling. Both are normal.',ex:'A crash of −20% turns RM100 into RM80.'},
+   {t:'Risk & Return',txt:'Higher potential return usually comes with higher risk of loss.',ex:'Bonds are steadier than technology stocks.'},
+   {t:'Diversification',txt:'Do not put all your eggs in one basket. Spread money across different assets.',ex:'Mix bonds, gold, ETFs and stocks.'},
+   {t:'Emotional Investing',txt:'Panic-selling in a crash or buying out of excitement usually hurts returns. Stick to a plan.',ex:'Selling after a 20% drop locks in the loss.'}],
+  quiz:[
+   {id:'m2a',q:'Which usually has the highest risk AND highest potential return?',opts:['Government Bond','Technology Stock','Cash','Gold'],correct:1,explain:'Technology stocks can grow fast but also fall hard — high risk, high potential return.'},
+   {id:'m2b',q:'What does diversification mean?',opts:['All money in one stock','Spreading money across different assets','Only buying gold','Selling when prices fall'],correct:1,explain:'Spreading money reduces the damage if any single investment drops.'}],
+  practical:[
+   {id:'p21',t:'Own 3 different assets',desc:'Buy at least 3 different assets in the Investment page.',go:'invest',done:()=>divCount()>=3},
+   {id:'p22',t:'Make 5 investment decisions',desc:'Buy or sell 5 times.',go:'invest',done:()=>S.invDecisions>=5},
+   {id:'p23',t:'Live through a market crash',desc:'Simulate a bear market and watch your portfolio.',go:'invest',done:()=>(S.crashes||0)>=1}]},
+ {id:'m3',icon:'🧾',color:'#2DE2B5',title:'Basic Accounting',sub:'Assets · Liabilities · Cash flow',
+  desc:'Simple, practical accounting for your own life — no university textbook needed.',
+  topics:[
+   {t:'Income vs Expenses',txt:'Income minus expenses is your monthly surplus (or shortfall).',ex:'RM4,000 − RM3,000 = RM1,000 surplus.'},
+   {t:'Assets',txt:'Things you own that have value: cash, savings, investments, a laptop.',ex:'RM500 cash + RM1,000 investments = RM1,500 assets.'},
+   {t:'Liabilities',txt:'Money you owe: credit card balances, loans.',ex:'A RM800 card balance is a liability.'},
+   {t:'Cash Flow',txt:'Cash flow is the timing of money moving in and out. You can own a lot but still run out of cash.',ex:'Buying a RM3,000 laptop on a card keeps your cash today but adds a liability.'},
+   {t:'Basic Financial Statements',txt:'Income statement = what you earned and spent. Balance sheet = what you own minus what you owe (net worth).',ex:'Net worth = assets − liabilities.'},
+   {t:'Decisions & Your Finances',txt:'Every decision changes your assets, liabilities or cash flow. Credit card purchase: asset up, liability up, cash unchanged for now.',ex:'Cash purchase: asset up, cash down.'}],
+  quiz:[
+   {id:'m3a',q:'You buy a RM3,000 laptop with a credit card. What happens?',opts:['Assets up, liabilities up','Assets down, liabilities up','Nothing changes','Cash goes up'],correct:0,explain:'You own the laptop (asset up) and owe the bank (liability up). Cash only drops when you pay the bill.'},
+   {id:'m3b',q:'Net worth equals…',opts:['Income − expenses','Assets − liabilities','Cash only','Savings + debt'],correct:1,explain:'Net worth = everything you own minus everything you owe.'}],
+  practical:[
+   {id:'p31',t:'Run a positive cash flow',desc:'Make sure monthly income is higher than expenses.',go:'finances',done:()=>S.income>totalExpenses()},
+   {id:'p32',t:'Keep card debt under 30% of your limit',desc:'Advance at least one month while keeping debt low.',go:'finances',done:()=>S.month>=2&&S.debt<=S.cardLimit*.3},
+   {id:'p33',t:'Grow your net worth',desc:'Reach a net worth above RM1,000.',go:'dash',done:()=>netWorth()>1000}]},
+ {id:'m4',icon:'🌍',color:'#F5A94E',title:'Macroeconomics & Financial Environment',sub:'Inflation · Rates · Cycles',
+  desc:'Only the economics you need to play smarter: why prices, interest and markets change.',
+  topics:[
+   {t:'Inflation',txt:'Prices rise over time, so the same RM100 buys less. Food, transport and rent get more expensive.',ex:'Inflation 2% → 5%: your RM100 groceries become RM103 instead of RM102 in a year.'},
+   {t:'Interest Rates',txt:'The cost of borrowing. Higher rates make loans and cards costlier but savings earn more.',ex:'Card at 18% costs far more than a savings account earns.'},
+   {t:'Economic Growth',txt:'When the economy grows, companies earn more and jobs are easier to find.',ex:'Growth often helps stocks.'},
+   {t:'Recession',txt:'A period of shrinking economy: less spending, more job losses, falling markets.',ex:'Emergency funds matter most here.'},
+   {t:'Economic Cycles',txt:'Economies move in waves: expansion, peak, recession, recovery.',ex:'Long-term investors ride out the waves.'},
+   {t:'Economy & Your Money',txt:'Conditions affect your costs, your savings value and your investment choices.',ex:'High inflation → cut non-essentials and protect real value.'}],
+  quiz:[
+   {id:'m4a',q:'Inflation rises from 2% to 5%. What happens to RM100 in cash?',opts:['Buys more','Buys less over time','Unchanged','Doubles'],correct:1,explain:'Higher inflation erodes the buying power of idle cash.'},
+   {id:'m4b',q:'During a recession, which is usually safest?',opts:['Maxed-out credit card','Emergency fund and low-risk assets','All-in on one tech stock','Quitting your job'],correct:1,explain:'Cash buffers and lower-risk assets protect you when the economy shrinks.'}],
+  practical:[
+   {id:'p41',t:'Face an inflation scenario',desc:'Draw scenarios until the inflation event appears.',go:'scenarios',done:()=>(S.seen||[]).includes('inf')},
+   {id:'p42',t:'Face a market crash scenario',desc:'Draw scenarios until a market crash appears.',go:'scenarios',done:()=>(S.seen||[]).includes('bear')}]}
+];
+
+const SCENARIOS = [
+  {id:'car',title:'🚗 Car Repair',desc:'Your car breaks down. Repair cost: RM1,500.',impact:-1500,
+   choices:[
+     {label:'Use emergency fund',fn:s=>{payFrom('emergencyFund',1500); return "You covered it without new debt — your emergency fund did its job."}},
+     {label:'Use credit card',fn:s=>{s.debt+=1500; return "No cash hit today, but RM1,500 of debt now earns interest against you."}},
+     {label:'Sell investments',fn:s=>{s.investCash(1500); return "You raised the cash, but lost potential future growth and may have sold at a bad time."}},
+     {label:'Reduce other expenses',fn:s=>{s.expenses.other=Math.max(0,s.expenses.other-200); s.cash-=1500; return "Cash took the hit directly and you trimmed future spending too."}},
+   ], learn:"An emergency fund exists exactly for moments like this — using debt for a one-off repair usually costs more in the long run."},
+  {id:'med',title:'🏥 Medical Expense',desc:'An unexpected medical bill arrives: RM2,000.',impact:-2000,
+   choices:[
+     {label:'Pay from savings',fn:s=>{payFrom('savings',2000); return "Your savings absorbed the shock; keep rebuilding them."}},
+     {label:'Pay from emergency fund',fn:s=>{payFrom('emergencyFund',2000); return "Exactly what this fund is for — well handled."}},
+     {label:'Put it on credit card',fn:s=>{s.debt+=2000; return "Quick fix, but interest will make this cost more over time."}},
+   ], learn:"Medical costs are a top reason people fall into debt — this is why 3-6 months of expenses in an emergency fund matters."},
+  {id:'bull',title:'📈 Market Rises',desc:'Markets rally. Riskier assets gain the most.',impact:0,
+   choices:[
+     {label:'Stay invested',fn:s=>{s.applyMarket(1); return "Patience paid off — your portfolio grew with the market."}},
+     {label:'Sell everything to lock in gains',fn:s=>{s.applyMarket(1); s.liquidateAll(); return "You banked the gain but now sit in cash, missing further growth and paying the 'emotional exit' cost."}},
+   ], learn:"Trying to perfectly time market tops is extremely hard — long-term investors usually do better staying the course."},
+  {id:'bear',title:'📉 Market Crash',desc:'A downturn hits. Riskier assets fall the most.',impact:0,
+   choices:[
+     {label:'Hold your positions',fn:s=>{s.applyMarket(-1); return "Selling low locks in losses — holding gives your portfolio time to recover."}},
+     {label:'Panic-sell everything',fn:s=>{s.applyMarket(-1); s.liquidateAll(); return "You locked in the loss permanently. This is 'emotional investing' — one of the biggest destroyers of returns."}},
+   ], learn:"Market crashes are normal and temporary. Selling in panic turns a paper loss into a real one."},
+  {id:'cc',title:'💳 Credit Card Payment Due',desc:'A payment of RM800 is due on your card.',impact:-800,
+   choices:[
+     {label:'Pay in full',fn:s=>{const p=Math.min(800,s.debt); s.cash-=p; s.debt-=p; return "No interest charged — the cleanest outcome."}},
+     {label:'Pay minimum only (RM100)',fn:s=>{s.cash-=100; s.debt=Math.max(0,s.debt-100)+Math.round(s.debt*0.02); return "The remaining balance keeps accumulating interest, growing your debt."}},
+     {label:'Use savings to cover it',fn:s=>{const p=Math.min(800,s.debt); payFrom('savings',p); s.debt-=p; return "Debt cleared, but your savings buffer shrank."}},
+   ], learn:"Carrying a credit card balance is one of the most expensive forms of debt — clearing it fully avoids compounding interest."},
+  {id:'inf',title:'🔥 Inflation Rises (2% → 5%)',desc:'Everyday costs are rising faster than usual.',impact:0,
+   choices:[
+     {label:'Adjust budget & cut non-essentials',fn:s=>{s.expenses.entertainment=Math.max(0,s.expenses.entertainment-100); return "You protected your savings rate by trimming discretionary spending."}},
+     {label:'Keep spending the same',fn:s=>{s.cash-=150; return "Your real purchasing power quietly shrank — RM100 buys less than before."}},
+   ], learn:"Inflation erodes cash sitting idle and raises food, transport and rent costs — investments that outpace inflation help protect long-term value."},
+];
+const LEVELS=['Financial Beginner','Smart Saver','Financial Explorer','Investor','Financial Strategist'];
+const EXP_META={rent:['🏠','Rent'],food:['🍽️','Food'],transport:['🚗','Transport'],entertainment:['🎮','Entertainment'],shopping:['🛍️','Shopping'],phone:['📱','Phone'],other:['📦','Other']};
+const PER={Daily:1/30,Weekly:7/30,Monthly:1,Yearly:12};
+
+/* ============ STATE ============ */
+let S=null;
+function defaultState(o){
+  const inc=o.income, z={};ASSETS.forEach(a=>z[a.id]=0);
+  const pr={};ASSETS.forEach(a=>pr[a.id]=100);
+  return {name:o.name,age:o.age,month:1,xp:0,income:inc,cash:o.cash,savings:0,fd:0,fdLeft:0,emergencyFund:0,debt:0,
+    cardLimit:Math.max(1000,Math.round(inc*1.5/500)*500),late:0,paid:false,paidOnce:false,
+    expenses:{rent:Math.round(inc*.25),food:Math.round(inc*.15),transport:Math.round(inc*.07),entertainment:Math.round(inc*.06),shopping:Math.round(inc*.04),phone:Math.round(inc*.02),other:Math.round(inc*.03)},
+    prices:pr,holdings:{...z},cb:{...z},hist:{},ih:{},mood:'flat',note:'',crashes:0,invDecisions:0,
+    lessonsDone:[],practDone:[],quizTotal:0,quizCorrect:0,scenariosDone:0,seen:[],pendingId:null,badges:[],
+    netWorthHistory:[],timeline:[{m:1,text:'Game started — income received, starting budget set.'}],
+    friends:FRIENDS0.map((f,i)=>({id:'f'+i,name:f[0],on:!!f[1],color:FCOL[i%FCOL.length]})),chats:{}};
+}
+function migrate(){
+  const d=defaultState({name:'Player',age:20,income:S.income||2000,cash:S.cash||0});
+  Object.keys(d).forEach(k=>{if(S[k]===undefined)S[k]=d[k];});
+  ['prices','holdings','expenses','cb'].forEach(k=>Object.keys(d[k]).forEach(x=>{if(S[k][x]===undefined)S[k][x]=d[k][x];}));
+  delete S.profile;delete S._pendingScenario;
+  ensureSeries();
+}
+function attachHelpers(s){s.investCash=investCash;s.applyMarket=applyMarket;s.liquidateAll=liquidateAll;return s;}
+function totalExpenses(){return Object.values(S.expenses).reduce((a,b)=>a+b,0);}
+function portfolioValue(){return ASSETS.reduce((s,a)=>s+S.holdings[a.id]*S.prices[a.id],0);}
+function costBasis(){return ASSETS.reduce((s,a)=>s+(S.cb[a.id]||0),0);}
+function divCount(){return ASSETS.filter(a=>S.holdings[a.id]*S.prices[a.id]>1).length;}
+function netWorth(){return S.cash+S.savings+S.fd+S.emergencyFund+portfolioValue()-S.debt;}
+function payFrom(key,amt){const t=Math.min(S[key],amt);S[key]-=t;S.cash-=amt-t;}
+function investCash(amount){
+  const val=portfolioValue(),sold=Math.min(val,amount);
+  if(val>0){const r=1-sold/val;ASSETS.forEach(a=>{S.holdings[a.id]*=r;S.cb[a.id]=(S.cb[a.id]||0)*r;});}
+  S.cash-=amount-sold;
+}
+function liquidateAll(){const v=portfolioValue();ASSETS.forEach(a=>{S.holdings[a.id]=0;S.cb[a.id]=0;});S.cash+=v;}
+function fixCash(){
+  if(S.cash<0){const x=Math.ceil(-S.cash);S.debt+=x;S.cash=0;S.timeline.push({m:S.month,text:'Cash ran short — '+fmt(x)+' was charged to your credit card.'});toast('Cash ran short: '+fmt(x)+' moved to card debt');}
+}
+function monthLabel(m){return new Date(2026,9+m-1,1).toLocaleString('en',{month:'short',year:'numeric'});}
+function initials(n){return (n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('')||'?').toUpperCase();}
+
+/* ============ MARKET ENGINE ============ */
+function walkBack(end,n,vol){const a=[end];for(let i=1;i<n;i++)a.unshift(Math.max(1,a[0]/(1+(Math.random()-.5)*vol*2)));a[a.length-1]=end;return a.map(v=>+v.toFixed(4));}
+function ensureSeries(){
+  ASSETS.forEach(a=>{if(!S.hist[a.id])S.hist[a.id]=walkBack(S.prices[a.id],60,a.vol*.6);});
+  Object.keys(IDX).forEach(k=>{if(!S.ih[k])S.ih[k]=walkBack(IDX[k].v,20,IDX[k].vol);});
+}
+function record(){ASSETS.forEach(a=>{const h=S.hist[a.id];h.push(S.prices[a.id]);if(h.length>120)h.shift();});}
+function pushIdx(f){Object.keys(IDX).forEach(k=>{const a=S.ih[k],l=a[a.length-1];a.push(+(l*(1+f*IDX[k].m+(Math.random()-.5)*IDX[k].vol)).toFixed(IDX[k].dp));if(a.length>40)a.shift();});}
+function applyMarket(dir){
+  const mag=dir>0?.09:.12;
+  ASSETS.forEach(a=>{const m=dir*mag*a.beta+(Math.random()-.5)*.02;S.prices[a.id]=Math.max(1,+(S.prices[a.id]*(1+m)).toFixed(2));});
+  pushIdx(dir*.05);record();S.mood=dir>0?'up':'down';if(dir<0)S.crashes=(S.crashes||0)+1;
+  S.note=dir>0?'Simulated bull market: riskier assets like technology rose the most.':'Simulated market crash: riskier assets fell the most — stay calm and think long term.';
+}
+function dailyTick(){
+  let tot=0;
+  ASSETS.forEach(a=>{const m=(Math.random()-.47)*a.vol;tot+=m;S.prices[a.id]=Math.max(1,+(S.prices[a.id]*(1+m)).toFixed(2));});
+  tot/=ASSETS.length;pushIdx(tot);record();
+  S.mood=tot>.002?'up':tot<-.002?'down':'flat';
+  S.note=S.mood==='up'?'Simulated markets edged higher today.':S.mood==='down'?'Simulated markets edged lower today.':'Simulated markets were quiet today.';
+}
+function pickScenario(){const pool=SCENARIOS.filter(s=>!(s.id==='cc'&&S.debt<=0));return pool[Math.floor(Math.random()*pool.length)];}
+
+/* ============ SCORE / LEVELS / BADGES ============ */
+function healthScore(){
+  const exp=totalExpenses(),inc=S.income||1;
+  const sv=Math.min(1,(S.savings+S.fd)/(inc*.5))*20;
+  const ef=Math.min(1,S.emergencyFund/((exp*3)||1))*20;
+  const db=Math.max(0,1-S.debt/(inc*2))*20;
+  const sp=Math.max(0,1-exp/inc)*15;
+  const dv=Math.min(1,divCount()/4)*15;
+  const cf=S.income-exp>=0?10:0;
+  return Math.round(sv+ef+db+sp+dv+cf);
+}
+function scoreLabel(sc){return sc>=80?'Excellent Financial Health':sc>=60?'Good Financial Health':sc>=40?'Needs Attention':'At Risk';}
+function levelFromXp(xp){return Math.min(LEVELS.length,Math.floor(xp/60)+1);}
+function checkBadges(){
+  const add=(id,l)=>{if(!S.badges.includes(id)){S.badges.push(id);toast('🏆 Badge earned: '+l);}};
+  if(S.savings+S.fd>=500)add('save1','First Savings Goal');
+  if(S.emergencyFund>0&&S.emergencyFund>=totalExpenses()*3)add('ef1','Emergency Fund Builder');
+  if(divCount()>=4)add('div1','Diversification Master');
+  if(S.debt<=0&&S.month>1)add('debt1','Debt Free');
+  if(S.scenariosDone>=3)add('mkt1','Market Survivor');
+  if(healthScore()>=80)add('strat1','Financial Strategist');
+  MODULES.forEach(m=>m.practical.forEach(p=>{if(!S.practDone.includes(p.id)&&p.done()){S.practDone.push(p.id);S.xp+=15;toast('✅ Practical complete: '+p.t+' (+15 XP)');}}));
+}
+
+/* ============ PERSISTENCE ============ */
+function save(){try{localStorage.setItem('wangwise_save',JSON.stringify(S));}catch(e){}}
+function load(){try{const raw=localStorage.getItem('wangwise_save');if(!raw)return false;S=attachHelpers(JSON.parse(raw));migrate();return true;}catch(e){return false;}}
+function toast(msg){if(/^(🏆|✅)/.test(msg))burst();const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2800);}
+
+/* ============ SIGN UP ============ */
+$('startBtn').onclick=()=>{
+  const name=$('suName').value.trim(),age=+$('suAge').value,inc=+$('suSal').value,csh=$('suCash').value===''?NaN:+$('suCash').value,err=$('suErr');
+  if(!name){err.textContent='Please enter your name.';return;}
+  if(!(age>=10&&age<=100)){err.textContent='Please enter a valid age (10-100).';return;}
+  if(!(inc>0)){err.textContent='Please enter your monthly salary.';return;}
+  if(!(csh>=0)){err.textContent='Please enter your starting cash (0 or more).';return;}
+  S=attachHelpers(defaultState({name,age,income:Math.round(inc),cash:Math.round(csh)}));
+  ensureSeries();save();boot();
+};
+
+/* ============ NAV ============ */
+const IC=d=>`<svg viewBox="0 0 24 24">${d}</svg>`;
+const PAGES=[
+ {id:'dash',label:'Dashboard',icon:IC('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>')},
+ {id:'learn',label:'Learn',icon:IC('<path d="M2 7l10-4 10 4-10 4z"/><path d="M6 9v6c0 1.5 3 3 6 3s6-1.5 6-3V9"/>')},
+ {id:'finances',label:'My Finance',icon:IC('<rect x="2" y="6" width="20" height="13" rx="3"/><path d="M2 10h20M16 15h2"/>')},
+ {id:'invest',label:'Investment',icon:IC('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>')},
+ {id:'scenarios',label:'Scenarios',icon:IC('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>')},
+ {id:'connection',label:'Connection',icon:IC('<path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 20v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/>')},
+ {id:'settings',label:'Settings',icon:IC('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>')},
+];
+let current='dash';
+function buildNav(){
+  const nl=$('navList'),bn=$('bottomNav');nl.innerHTML='';bn.innerHTML='';
+  PAGES.forEach(p=>{
+    const b=document.createElement('button');b.className='nav-item'+(p.id===current?' active':'');b.innerHTML=p.icon+' '+p.label;b.onclick=()=>{current=p.id;render();window.scrollTo(0,0);};nl.appendChild(b);
+    const b2=document.createElement('button');b2.className=p.id===current?'active':'';b2.innerHTML=p.icon+'<span>'+p.label.replace('My ','')+'</span>';b2.onclick=b.onclick;bn.appendChild(b2);
+  });
+}
+function render(){
+  fixCash();checkBadges();buildNav();
+  const sc=healthScore(),lvl=levelFromXp(S.xp);
+  $('pageTitle').textContent=PAGES.find(p=>p.id===current).label;
+  $('hpBar').style.width=sc+'%';$('hpTxt').textContent=sc+'/100';$('hpTag').textContent=sc>=70?'Stable':sc>=45?'Fair':'At risk';
+  $('monthPill').textContent='Month '+S.month+' · '+monthLabel(S.month);
+  $('uAv').textContent=initials(S.name);$('uName').textContent=S.name;$('uLvl').textContent='Level '+lvl+' · '+LEVELS[lvl-1];
+  const c=$('pageContent');c.innerHTML='';
+  ({dash:renderDash,learn:renderLearn,finances:renderFinances,invest:renderInvest,scenarios:renderScenarios,connection:renderConnection,settings:renderSettings})[current](c);
+  afterRender();
+  save();
+}
+
+/* ============ DASHBOARD ============ */
+function netWorthSpark(){
+  const h=S.netWorthHistory.length?S.netWorthHistory:[netWorth()];if(h.length===1)h.push(h[0]);
+  const mn=Math.min(...h),mx=Math.max(...h,mn+1);
+  return `<polyline points="${h.map((v,i)=>`${i/(h.length-1)*300},${100-((v-mn)/(mx-mn||1))*90-5}`).join(' ')}" fill="none" stroke="#2DE2B5" stroke-width="3"/>`;
+}
+function renderDash(c){
+  const sc=healthScore(),exp=totalExpenses();
+  $('pageSub').textContent='Good to see you, '+S.name+' 👋';
+  const pl=portfolioValue()-costBasis();
+  const cards=[['Net Worth',fmt(netWorth()),''],['Bank Account',fmt(S.cash),''],['Savings & FD',fmt(S.savings+S.fd),''],['Investments',fmt(portfolioValue()),costBasis()>0?'P/L '+(pl>=0?'+':'')+fmt(pl):''],['Card Debt',fmt(S.debt),S.debt>0?'Owed':'Debt free'],['Emergency Fund',fmt(S.emergencyFund),'Target '+fmt(exp*3)]];
+  const circ=326.7,off=circ*(1-sc/100),mx=Math.max(S.income,exp,1);
+  c.innerHTML=`<div class="card hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="52" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="10"/><circle cx="66" cy="66" r="52" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/><defs><linearGradient id="g"><stop offset="0" stop-color="#7C6CFF"/><stop offset="1" stop-color="#2DE2B5"/></linearGradient></defs></svg><b>${sc}<small>/ 100</small></b></div>
+   <div style="flex:1;min-width:200px"><div class="stat-label">Financial Health</div><h2>${scoreLabel(sc)}</h2><p class="small">Net worth <b style="color:var(--text)">${fmt(netWorth())}</b> · Ask Wise (bottom-right) for personalised tips.</p></div></div>
+  <div class="grid">${cards.map(([l,v,s])=>`<div class="card"><div class="stat-label">${l}</div><div class="stat-val">${v}</div><div class="small">${s}</div></div>`).join('')}</div>
+  <div class="section row"><div class="card col"><h3>Monthly Cash Flow</h3><div class="small">Income</div><div class="bar-track"><div class="bar-fill" style="width:${S.income/mx*100}%"></div></div><div class="small" style="margin-top:10px">Expenses</div><div class="bar-track"><div class="bar-fill" style="width:${exp/mx*100}%;background:var(--warn)"></div></div><p class="small" style="margin-top:10px">Surplus: <b>${fmt(S.income-exp)}</b>/month</p></div>
+  <div class="card col"><h3>Net Worth Trend</h3><svg viewBox="0 0 300 100" style="width:100%;height:100px">${netWorthSpark()}</svg><p class="small">Updates each time you advance a month.</p></div></div>
+  <div class="section card"><h3>Recent Timeline</h3>${S.timeline.slice(-4).reverse().map(t=>`<div class="timeline-item">Month ${t.m}: ${esc(t.text)}</div>`).join('')}</div>`;
+}
+
+/* ============ LEARN ============ */
+let learnMod=null,learnTab='home';
+function modProgress(m){const t=m.quiz.length+m.practical.length;const d=m.quiz.filter(q=>S.lessonsDone.includes(q.id)).length+m.practical.filter(p=>S.practDone.includes(p.id)).length;return [d,t];}
+function ringHTML(d,t,color){const C=100.53,len=t?d/t*C:0;return `<span class="ringw"><svg width="46" height="46" viewBox="0 0 40 40" style="transform:rotate(-90deg)"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${len} ${C}"/></svg><span class="ringtxt">${d}/${t}</span></span>`;}
+function renderLearn(c){
+  const m=MODULES.find(x=>x.id===learnMod);
+  if(!m){
+    $('pageSub').textContent='Learn → Play → Decide → Improve';
+    c.innerHTML=`<div class="path-head"><h3>Select Path</h3><p class="small">Pick a module — read the lessons, take the quiz, then practise inside the game.</p></div><div class="path">${MODULES.map(mm=>{const [d,t]=modProgress(mm);return `<button class="path-card" data-m="${mm.id}" style="--mc:${mm.color}"><span class="pic">${mm.icon}</span><span class="ptxt"><b>${mm.title}</b><small>${mm.sub}</small></span>${ringHTML(d,t,mm.color)}</button>`;}).join('')}</div>`;
+    c.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{learnMod=b.dataset.m;learnTab='home';render();});
+    return;
+  }
+  $('pageSub').textContent=m.title;
+  const tabs=[['home','Home'],['modules','Modules'],['quiz','Quiz'],['practical','Practical']];
+  const [d,t]=modProgress(m);
+  let body='';
+  if(learnTab==='home'){
+    body=`<div class="card"><h3>${m.icon} ${m.title}</h3><p>${m.desc}</p><span class="statchip">📚 ${m.topics.length} topics</span><span class="statchip">❓ ${m.quiz.length} quiz questions</span><span class="statchip">🎯 ${m.practical.length} practicals</span><span class="statchip">✅ ${d}/${t} complete</span><div class="bar-track"><div class="bar-fill" style="width:${t?d/t*100:0}%"></div></div><br><button class="btn teal" data-tab="modules">Start with Modules →</button></div>`;
+  }else if(learnTab==='modules'){
+    body=`<div class="card"><h3>Modules</h3><p class="small">Tap a topic to read it.</p>${m.topics.map((x,i)=>`<details class="topic" ${i===0?'open':''}><summary>${i+1}. ${x.t}</summary><p>${x.txt}</p><p class="small">Example: ${x.ex}</p></details>`).join('')}</div>`;
+  }else if(learnTab==='quiz'){
+    body=m.quiz.map(q=>{const done=S.lessonsDone.includes(q.id);return `<div class="card" style="margin-bottom:14px" id="qz-${q.id}"><p><b>${q.q}</b> ${done?'<span class="badge low">Completed</span>':''}</p>${q.opts.map((o,i)=>`<button class="quiz-opt ${done&&i===q.correct?'correct':''}" data-q="${q.id}" data-i="${i}" ${done?'disabled':''}>${o}</button>`).join('')}<div class="fb">${done?`<p class="small"><b>Explanation:</b> ${q.explain}</p>`:''}</div></div>`;}).join('');
+  }else{
+    body=`<div class="card"><h3>Practical</h3><p class="small">Apply what you learned inside the game. Completing a practical earns 15 XP.</p>${m.practical.map(p=>{const ok=S.practDone.includes(p.id)||p.done();return `<div class="prac"><div><b>${ok?'✅':'⏳'} ${p.t}</b><div class="small">${p.desc}</div></div><button class="btn ${ok?'ghost':'teal'}" data-go="${p.go}">${ok?'Revisit':'Go →'}</button></div>`;}).join('')}</div>`;
+  }
+  c.innerHTML=`<div class="mod-wrap"><div class="mod-nav"><button class="back" data-back="1">← All modules</button>${tabs.map(([k,l])=>`<button class="${learnTab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div><div>${body}</div></div>`;
+  c.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.tab;render();});
+  c.querySelector('[data-back]').onclick=()=>{learnMod=null;render();};
+  c.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{current=b.dataset.go;render();});
+  c.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{
+    const q=m.quiz.find(x=>x.id===b.dataset.q),i=+b.dataset.i,box=$('qz-'+q.id);
+    box.querySelectorAll('.quiz-opt').forEach((o,oi)=>{o.disabled=true;if(oi===q.correct)o.classList.add('correct');});
+    S.quizTotal++;
+    let extra='';
+    if(i===q.correct){S.quizCorrect++;S.lessonsDone.push(q.id);S.xp+=20;toast('✅ Correct! +20 XP');checkBadges();}
+    else{b.classList.add('wrong');extra='<br><button class="btn ghost" id="retry-'+q.id+'">Try again</button>';}
+    box.querySelector('.fb').innerHTML=`<p class="small"><b>${i===q.correct?'Correct!':'Not quite.'}</b> ${q.explain}</p>${extra}`;
+    const r=$('retry-'+q.id);if(r)r.onclick=()=>render();
+    save();
+  });
+}
+
+/* ============ MY FINANCE (2 pages) ============ */
+let expPer='Monthly',showBudget=false;
+function minPay(){return S.debt<=0?0:Math.min(S.debt,Math.max(50,Math.round(S.debt*.1)));}
+function creditGrade(){const u=S.debt/S.cardLimit;let g=u<.2?0:u<.4?1:u<.6?2:u<.8?3:4;g=Math.min(4,g+Math.min(2,S.late));return 'ABCDE'[g];}
+function mv(key,amt){if(S.cash<amt){toast('Not enough cash in your bank account');return;}S.cash-=amt;S[key]+=amt;if(key==='fd')S.fdLeft=6;checkBadges();render();}
+function payCard(full){const m=minPay(),amt=full?S.debt:m;if(amt<=0){toast('No balance to pay');return;}if(S.cash<amt){toast('Not enough cash in your bank account');return;}S.cash-=amt;S.debt-=amt;if(amt>=m)S.paid=true;S.paidOnce=true;toast('Paid '+fmt(amt));render();}
+function advanceMonth(){
+  const exp=totalExpenses(),notes=[];
+  S.cash+=S.income-exp;
+  S.savings=Math.round(S.savings*1.0025);
+  if(S.fd>0){S.fd=Math.round(S.fd*(1+.04/12));S.fdLeft--;if(S.fdLeft<=0){S.cash+=S.fd;notes.push('Fixed deposit matured: '+fmt(S.fd)+' returned to your bank account.');S.fd=0;}}
+  if(S.debt>0){if(!S.paid){S.late++;S.debt+=30;notes.push('Missed minimum card payment — RM30 late fee and a hit to your credit grade.');}S.debt=Math.round(S.debt*1.015);}
+  S.paid=false;S.month++;dailyTick();
+  S.timeline.push({m:S.month,text:'Income '+fmt(S.income)+' received, '+fmt(exp)+' in expenses paid.'+(notes.length?' '+notes.join(' '):'')});
+  S.netWorthHistory.push(netWorth());
+  if(Math.random()<.7){S.pendingId=pickScenario().id;current='scenarios';}
+  render();toast('Month '+S.month+' begins'+(notes.length?' — '+notes[0]:''));
+}
+function renderFinances(c){
+  $('pageSub').textContent='A snapshot of your current financial situation';
+  const f=PER[expPer],tot=totalExpenses(),util=S.debt/S.cardLimit,grade=creditGrade(),minp=minPay();
+  const ph=S.late===0?['Excellent','ok']:S.late===1?['Good','ok']:['Poor','bad'];
+  const cu=util<.3?['Good','ok']:util<.6?['Fair','mid']:['High','bad'];
+  const ob=S.debt<S.cardLimit*.2?['Low','ok']:S.debt<S.cardLimit*.6?['Medium','mid']:['High','bad'];
+  const totSav=S.cash+S.savings+S.fd+S.emergencyFund;
+  c.innerHTML=`<div class="fin-head"><span class="small">Page <span id="pgNum">1</span>/2</span><div class="dots-nav"><button class="on" data-pg="0">1</button><button data-pg="1">2</button></div></div>
+  <div class="carwrap"><button class="nextbtn" id="nextPg" aria-label="Next page">›</button><div class="carousel" id="car">
+  <section class="cpage"><div class="fgrid">
+   <div class="card fcard" style="--ac:#2DE2B5"><h3>🐷 Current Savings</h3><p class="small">Your money, your future.</p>
+    <div class="mini"><span>🏦 Bank Account</span><b>${fmt(S.cash)}</b></div>
+    <div class="mini"><span>💰 Savings Account <small class="small">3.0% p.a.</small></span><b>${fmt(S.savings)}</b></div>
+    <div class="mini"><span>🔒 Fixed Deposit <small class="small">4.0% · ${S.fd>0?S.fdLeft+' mo left':'6 months'}</small></span><b>${fmt(S.fd)}</b></div>
+    <div class="mini"><span>🛟 Emergency Fund</span><b>${fmt(S.emergencyFund)}</b></div>
+    <div class="mini total"><span>Total Savings</span><b>${fmt(totSav)}</b></div></div>
+   <div class="card fcard" style="--ac:#F5A94E"><h3>🧾 Expenses</h3><p class="small">Track your spending.</p>
+    <div class="seg">${Object.keys(PER).map(k=>`<button class="${k===expPer?'on':''}" data-per="${k}">${k}</button>`).join('')}</div>
+    ${Object.keys(S.expenses).map(k=>`<div class="mini" style="margin-top:6px"><span>${EXP_META[k][0]} ${EXP_META[k][1]}</span><b>${fmtD(S.expenses[k]*f)}</b></div>`).join('')}
+    <div class="mini total" style="background:var(--warn-l)"><span>Total ${expPer} Expenses</span><b>${fmtD(tot*f)}</b></div></div>
+   <div class="card fcard" style="--ac:#7C6CFF"><h3>💳 Credit Card Usage</h3><p class="small">Manage your credit wisely.</p>
+    <div style="display:flex;justify-content:space-between;margin-top:10px"><div><small class="small">Current Balance</small><div class="stat-val" style="font-size:20px">${fmt(S.debt)}</div></div><div style="text-align:right"><small class="small">Credit Limit</small><div class="stat-val" style="font-size:20px">${fmt(S.cardLimit)}</div></div></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,util*100)}%;background:var(--violet)"></div></div>
+    <div class="mini total"><span>Available Credit</span><b>${fmt(Math.max(0,S.cardLimit-S.debt))}</b></div>
+    <div class="ghex"><div class="hex">${grade}</div><div><b>Credit Grade</b><div class="letters">${'ABCDE'.split('').map(l=>`<span class="${l===grade?'on':''}">${l}</span>`).join('')}</div></div></div>
+    <div class="chk"><span>Payment History</span><b class="${ph[1]}">${ph[0]}</b></div><div class="chk"><span>Credit Utilisation</span><b class="${cu[1]}">${cu[0]}</b></div><div class="chk"><span>Outstanding Balance</span><b class="${ob[1]}">${ob[0]}</b></div></div>
+   <div class="card fcard" style="--ac:#FF6B6B"><h3>📅 Payment Due & Outstanding</h3><p class="small">Don't miss your due dates.</p>
+    <div class="mini"><span>Outstanding Balance</span><b>${fmt(S.debt)}</b></div><div class="mini"><span>Due Date</span><b>15 ${new Date(2026,9+S.month-1,1).toLocaleString('en',{month:'long'})} ${new Date(2026,9+S.month-1,1).getFullYear()}</b></div><div class="mini"><span>Minimum Payment</span><b>${fmt(minp)}</b></div>
+    <div class="mini" style="background:var(--danger-l)"><span>${S.debt<=0?'No payment due 🎉':S.paid?'✅ Minimum paid this month':'⏰ Payment due this month'}</span></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn warn" id="payMin" ${S.debt<=0?'disabled':''}>Pay Minimum</button><button class="btn teal" id="payFull" ${S.debt<=0?'disabled':''}>Pay in Full</button></div></div>
+  </div>
+  <div class="card section"><h3>Quick Actions</h3><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+    <button class="btn" id="aSave">Cash → Savings RM200</button><button class="btn" id="aEf">Cash → Emergency Fund RM200</button><button class="btn" id="aFd">Cash → Fixed Deposit RM500 (6 mo lock)</button>
+    <button class="btn danger" id="aCc">Use Credit Card +RM500</button><button class="btn ghost" id="aBud">${showBudget?'Hide':'Edit'} Budget</button><button class="btn teal" id="aAdv">Advance Month →</button></div></div>
+  ${showBudget?`<div class="card section"><h3>Edit Monthly Budget</h3><div class="grid">${Object.keys(S.expenses).map(k=>`<div><label>${EXP_META[k][0]} ${EXP_META[k][1]} (RM / month)</label><input type="number" min="0" data-exp="${k}" value="${S.expenses[k]}"></div>`).join('')}</div><button class="btn teal" id="saveExp" style="margin-top:12px">Save Budget</button></div>`:''}
+  </section>
+  <section class="cpage">${progressHTML()}</section>
+  </div></div><div class="hint">↔ Scroll right to view more ↔</div>`;
+  const car=$('car'),go=i=>car.scrollTo({left:i*car.clientWidth,behavior:'smooth'});
+  car.onscroll=()=>{if(!car.isConnected||!$('pgNum')||!$('nextPg'))return;const i=Math.round(car.scrollLeft/car.clientWidth);$('pgNum').textContent=i+1;c.querySelectorAll('[data-pg]').forEach(b=>b.classList.toggle('on',+b.dataset.pg===i));$('nextPg').textContent=i===0?'›':'‹';};
+  c.querySelectorAll('[data-pg]').forEach(b=>b.onclick=()=>go(+b.dataset.pg));
+  $('nextPg').onclick=()=>go(car.scrollLeft<car.clientWidth/2?1:0);
+  c.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{expPer=b.dataset.per;render();});
+  $('payMin').onclick=()=>payCard(false);$('payFull').onclick=()=>payCard(true);
+  $('aSave').onclick=()=>mv('savings',200);$('aEf').onclick=()=>mv('emergencyFund',200);$('aFd').onclick=()=>mv('fd',500);
+  $('aCc').onclick=()=>{if(S.debt+500>S.cardLimit){toast('Credit limit reached');return;}S.cash+=500;S.debt+=500;render();};
+  $('aBud').onclick=()=>{showBudget=!showBudget;render();};
+  $('aAdv').onclick=advanceMonth;
+  const se=$('saveExp');if(se)se.onclick=()=>{c.querySelectorAll('[data-exp]').forEach(i=>{S.expenses[i.dataset.exp]=Math.max(0,Math.round(+i.value)||0);});toast('Budget updated');render();};
+}
+function progressHTML(){
+  const lvl=levelFromXp(S.xp);
+  const names={save1:'🏆 First Savings Goal',ef1:'🏆 Emergency Fund Builder',div1:'🏆 Diversification Master',debt1:'🏆 Debt Free',mkt1:'🏆 Market Survivor',strat1:'🏆 Financial Strategist'};
+  const qTot=MODULES.reduce((s,m)=>s+m.quiz.length,0);
+  return `<h3 style="margin:4px 0 10px">Progress <span class="small">Your learning & gameplay journey</span></h3><div class="grid">
+   <div class="card"><div class="stat-label">Level</div><div class="stat-val" style="font-size:19px">${lvl} — ${LEVELS[lvl-1]}</div><div class="bar-track"><div class="bar-fill" style="width:${S.xp%60/60*100}%"></div></div><div class="small">${S.xp} XP</div></div>
+   <div class="card"><div class="stat-label">Quiz Questions Passed</div><div class="stat-val">${S.lessonsDone.length}/${qTot}</div><div class="small">${S.quizCorrect}/${S.quizTotal} answers correct</div></div>
+   <div class="card"><div class="stat-label">Scenarios Faced</div><div class="stat-val">${S.scenariosDone}</div></div>
+   <div class="card"><div class="stat-label">Investment Decisions</div><div class="stat-val">${S.invDecisions}</div></div>
+   <div class="card"><div class="stat-label">Financial Health</div><div class="stat-val">${healthScore()}/100</div></div></div>
+  <div class="card section"><h3>Badges</h3>${S.badges.length?S.badges.map(b=>`<span class="chip">${names[b]}</span>`).join(''):'<p class="small">No badges yet — keep playing!</p>'}</div>
+  <div class="card section"><h3>Financial Mentorship <span class="badge mid">COMING SOON</span></h3><p class="small">Users who reach an advanced level may receive guidance from finance students or qualified financial professionals.</p>
+   <div class="row" style="margin-top:10px"><div class="card col"><b>Finance Student Mentor</b><p class="small">Basic financial concepts, budgeting, investment learning, study guidance.</p></div><div class="card col"><b>Qualified Professional</b><p class="small">Financial planning education, investment concepts, risk management, personal finance guidance.</p></div></div></div>`;
+}
+
+/* ============ INVESTMENT ============ */
+let invCat='Stocks',invId='msia',invRange=30,tradeSide='Buy',tradeAsset=null;
+function spark(arr,w=84,h=26){const mn=Math.min(...arr),mx=Math.max(...arr),r=(mx-mn)||1;const pts=arr.map((v,i)=>`${(i/(arr.length-1))*w},${h-2-((v-mn)/r)*(h-4)}`).join(' ');return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${arr[arr.length-1]>=arr[0]?'#2DE2B5':'#FF6B6B'}" stroke-width="1.8"/></svg>`;}
+function chartSVG(arr){
+  const W=600,H=220,L=46,R=10,T=12,B=22,mn=Math.min(...arr),mx=Math.max(...arr),r=(mx-mn)||1,pad=r*.08,lo=mn-pad,hi=mx+pad;
+  const X=i=>L+i/(arr.length-1)*(W-L-R),Y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
+  const pts=arr.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ');
+  const up=arr[arr.length-1]>=arr[0],col=up?'#2DE2B5':'#FF6B6B';
+  const lines=[lo+(hi-lo)*.1,(lo+hi)/2,hi-(hi-lo)*.1].map(v=>`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(255,255,255,.07)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="#8C97B8">${v.toFixed(1)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".3"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>${lines}<polygon points="${L},${H-B} ${pts} ${W-R},${H-B}" fill="url(#cg)"/><polyline points="${pts}" pathLength="1" class="drawline" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="${X(arr.length-1)}" cy="${Y(arr[arr.length-1])}" r="4.5" fill="${col}"/><text x="${L}" y="${H-5}" font-size="11" fill="#8C97B8">${arr.length-1} steps ago</text><text x="${W-R}" y="${H-5}" text-anchor="end" font-size="11" fill="#8C97B8">Now</text></svg>`;
+}
+function donutData(){
+  const parts=CATS.map(ct=>({ct,v:ASSETS.filter(a=>a.cat===ct).reduce((s,a)=>s+S.holdings[a.id]*S.prices[a.id],0)}));
+  const tot=parts.reduce((s,p)=>s+p.v,0),C=251.33;let off=0;
+  let rings='<circle cx="60" cy="60" r="40" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="16"/>';
+  if(tot>0)parts.forEach(p=>{const len=p.v/tot*C;if(len>0){rings+=`<circle cx="60" cy="60" r="40" fill="none" stroke="${CATCOL[p.ct]}" stroke-width="16" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"/>`;off+=len;}});
+  return {svg:`<svg viewBox="0 0 120 120" width="130" height="130" style="transform:rotate(-90deg)">${rings}</svg>`,parts,tot};
+}
+function riskLevel(){
+  const v=portfolioValue();if(v<=0)return ['None','low'];
+  const w=ASSETS.reduce((s,a)=>s+S.holdings[a.id]*S.prices[a.id]*({Low:1,Medium:2,High:3}[a.risk]),0)/v;
+  return w<1.5?['Low','low']:w<2.3?['Moderate','mid']:['High','high'];
+}
+function renderInvest(c){
+  $('pageSub').textContent='Virtual money only — no real funds involved';
+  const catAssets=ASSETS.filter(a=>a.cat===invCat);
+  if(!catAssets.find(a=>a.id===invId))invId=catAssets[0].id;
+  const a=ASSETS.find(x=>x.id===invId),full=S.hist[a.id],arr=full.slice(-invRange),price=S.prices[a.id];
+  const day=(full[full.length-1]/full[full.length-2]-1)*100,ret=(arr[arr.length-1]/arr[0]-1)*100;
+  const hv=S.holdings[a.id]*price,hpl=hv-(S.cb[a.id]||0);
+  const dn=donutData(),rk=riskLevel(),val=portfolioValue(),pl=val-costBasis();
+  const tAsset=tradeAsset||invId,news=NEWS[S.mood||'flat'],times=['Just now','2 hours ago','4 hours ago','6 hours ago'];
+  c.innerHTML=`<div class="card banner"><div><h2>Investment Market</h2><p class="small" style="margin:0">Explore simulated assets and make decisions based on market trends.</p></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="mDay">⏭ Next Day</button><button class="btn teal" id="mBull">📈 Bull Market</button><button class="btn danger" id="mBear">📉 Bear Market</button></div></div>
+  <div class="ticks">${Object.keys(IDX).map(k=>{const h=S.ih[k],l=h[h.length-1],ch=(l/h[h.length-2]-1)*100;return `<div class="card tick"><div><small>${IDX[k].n}</small><b>${l.toLocaleString(undefined,{minimumFractionDigits:IDX[k].dp,maximumFractionDigits:IDX[k].dp})}</b><small class="${ch>=0?'up':'dn'}">${ch>=0?'▲':'▼'} ${pct(ch)}</small></div>${spark(h)}</div>`;}).join('')}</div>
+  <div class="inv-grid">
+   <div class="card wide"><div class="tabs">${CATS.map(ct=>`<button class="${ct===invCat?'on':''}" data-cat="${ct}">${ct}</button>`).join('')}</div>
+    ${catAssets.length>1?`<div style="display:flex;gap:6px;margin-bottom:10px">${catAssets.map(x=>`<button class="chip" style="cursor:pointer;color:var(--text);${x.id===invId?'background:var(--grad);color:#06101F;font-weight:700;':''}" data-asset="${x.id}">${x.name}</button>`).join('')}</div>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div><b>${a.name} (${a.tk})</b> <span class="badge ${a.risk==='High'?'high':a.risk==='Low'?'low':'mid'}">${a.risk} Risk</span><div style="font-size:26px;font-weight:800;margin-top:4px">${fmtD(price)} <small class="${day>=0?'up':'dn'}" style="font-size:13px">${day>=0?'▲':'▼'} ${pct(day)} Today</small></div></div>
+     <div class="rng">${[[7,'1W'],[30,'1M'],[45,'3M'],[60,'All']].map(([n,l])=>`<button class="${invRange===n?'on':''}" data-range="${n}">${l}</button>`).join('')}</div></div>
+    ${chartSVG(arr)}
+    <div class="kgrid"><div><small>Return (${invRange===60?'All':invRange+' steps'})</small><b class="${ret>=0?'up':'dn'}">${pct(ret)}</b></div><div><small>Dividend Yield</small><b>${a.yld.toFixed(1)}%</b></div><div><small>Expense Ratio</small><b>${a.fee}</b></div><div><small>Your Holding</small><b>${fmt(hv)} <span class="${hpl>=0?'up':'dn'}" style="font-size:11px">${hpl>=0?'+':''}${fmt(hpl)}</span></b></div></div>
+    <p class="small" style="margin-top:12px"><b style="color:var(--text)">Investment Summary:</b> ${a.blurb}</p></div>
+   <div class="card"><h3>Market News & Insights</h3><p class="small">Simulated headlines for learning.</p>${news.map((n,i)=>`<div class="news"><div class="th">${n[2]}</div><div><b>${n[0]}</b><span class="badge mid">${n[1]}</span> <small class="small">${times[i]}</small></div></div>`).join('')}</div>
+   <div><div class="card"><h3>Your Investment Portfolio</h3><div class="donutw"><div class="donutc">${dn.svg}<b><small>Total Value</small>${fmt(val)}</b></div><div class="leg">${dn.parts.map(p=>`<div><span><i style="background:${CATCOL[p.ct]}"></i>${p.ct}</span><b>${dn.tot>0?Math.round(p.v/dn.tot*100):0}%</b></div>`).join('')}</div></div>
+     <div class="kgrid"><div><small>Profit / Loss</small><b class="${pl>=0?'up':'dn'}">${pl>=0?'+':''}${fmt(pl)}</b></div><div><small>Risk Level</small><b><span class="badge ${rk[1]}">${rk[0]}</span></b></div></div></div>
+    <div class="card" style="margin-top:14px"><h3>Invest / Trade</h3><div class="seg2"><button class="${tradeSide==='Buy'?'on':''}" data-side="Buy">Buy</button><button class="${tradeSide==='Sell'?'on':''}" data-side="Sell">Sell</button></div>
+     <label>Asset Type</label><select id="tAsset">${ASSETS.map(x=>`<option value="${x.id}" ${x.id===tAsset?'selected':''}>${x.name} — ${fmtD(S.prices[x.id])}</option>`).join('')}</select>
+     <label>Amount (RM) · Cash available ${fmt(S.cash)}</label><input type="number" id="tAmt" min="1" value="100">
+     <button class="btn teal" id="tGo" style="width:100%;margin-top:12px">Confirm ${tradeSide==='Buy'?'Purchase':'Sale'} →</button>
+     <div class="tip">💡 <b>Investment Tip</b><br>Diversification helps reduce risk. Don't put all your money in one asset class!</div></div></div>
+  </div>
+  <div class="upd"><b>Market Update:</b> ${S.note||'Markets are calm. Make a trade or simulate a market event to see prices move.'}</div>`;
+  c.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{invCat=b.dataset.cat;invId=ASSETS.find(x=>x.cat===invCat).id;tradeAsset=null;render();});
+  c.querySelectorAll('[data-asset]').forEach(b=>b.onclick=()=>{invId=b.dataset.asset;tradeAsset=null;render();});
+  c.querySelectorAll('[data-range]').forEach(b=>b.onclick=()=>{invRange=+b.dataset.range;render();});
+  c.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{tradeSide=b.dataset.side;tradeAsset=$('tAsset').value;render();});
+  $('mDay').onclick=()=>{dailyTick();toast('Next day: '+S.note);render();};
+  $('mBull').onclick=()=>{applyMarket(1);toast('Market rallied 📈');render();};
+  $('mBear').onclick=()=>{applyMarket(-1);toast('Market crashed 📉');render();};
+  $('tGo').onclick=()=>{
+    const id=$('tAsset').value,amt=Math.round(+$('tAmt').value),pr=S.prices[id];
+    if(!(amt>0)){toast('Enter an amount');return;}
+    if(tradeSide==='Buy'){if(amt>S.cash){toast('Not enough cash');return;}S.cash-=amt;S.holdings[id]+=amt/pr;S.cb[id]=(S.cb[id]||0)+amt;}
+    else{const h=S.holdings[id]*pr;if(h<1){toast('You do not hold this asset');return;}const x=Math.min(amt,h),r=1-x/h;S.cb[id]=(S.cb[id]||0)*r;S.holdings[id]*=r;S.cash+=x;}
+    S.invDecisions++;tradeAsset=id;toast((tradeSide==='Buy'?'Bought ':'Sold ')+fmt(amt)+' of '+ASSETS.find(x=>x.id===id).name);render();
+  };
+}
+
+/* ============ SCENARIOS ============ */
+function renderScenarios(c){
+  $('pageSub').textContent="Unexpected events test what you've learned";
+  const sc=SCENARIOS.find(x=>x.id===S.pendingId);
+  if(!sc){
+    c.innerHTML=`<div class="card"><h3>No active scenario</h3><p class="small">Advance a month in My Finance, or draw one now.</p><button class="btn teal" id="drawBtn">🎲 Draw a Scenario</button></div>
+    <div class="card section"><h3>Financial Timeline</h3>${S.timeline.slice(-10).reverse().map(t=>`<div class="timeline-item">Month ${t.m}: ${esc(t.text)}</div>`).join('')}</div>`;
+    $('drawBtn').onclick=()=>{S.pendingId=pickScenario().id;render();};return;
+  }
+  c.innerHTML=`<div class="card"><h3>${sc.title}</h3><p>${sc.desc}</p><div id="choiceArea">${sc.choices.map((ch,i)=>`<button class="quiz-opt" data-i="${i}">${ch.label}</button>`).join('')}</div><div id="resultArea"></div></div>`;
+  c.querySelectorAll('[data-i]').forEach(btn=>btn.onclick=()=>{
+    const ch=sc.choices[+btn.dataset.i],outcome=ch.fn(S);
+    S.scenariosDone++;S.seen.push(sc.id);S.pendingId=null;S.timeline.push({m:S.month,text:sc.title+' — '+ch.label});
+    fixCash();checkBadges();save();
+    $('choiceArea').querySelectorAll('button').forEach(b=>b.disabled=true);
+    $('resultArea').innerHTML=`<div class="card" style="margin-top:12px;background:var(--teal-l)"><p><b>What happened:</b> ${outcome}</p><p><b>Why this matters:</b> ${sc.learn}</p><button class="btn teal" id="doneScenario">Continue</button></div>`;
+    $('doneScenario').onclick=()=>render();
+  });
+}
+
+/* ============ CONNECTION (friends chat — simulated, local only) ============ */
+let connQ='',connActive=null;
+function friendReply(t){
+  t=t.toLowerCase();const pick=a=>a[Math.floor(Math.random()*a.length)];
+  if(/hi|hello|hey|halo/.test(t))return pick(['Hey! How is your month going? 😄','Hi! Did you stick to your budget this week?']);
+  if(/budget|save|saving|jar/.test(t))return pick(['I use the 6 Jars method — it stops me overspending!','Pay yourself first: move savings out on payday.']);
+  if(/invest|stock|gold|etf|market/.test(t))return pick(['I split mine across ETF, bonds and a little tech. Slow and steady!','The crash scenario scared me, but holding on paid off.']);
+  if(/debt|card|credit/.test(t))return pick(['I always pay my card in full — interest is brutal.','Minimum payments only? Careful, it snowballs!']);
+  return pick(['Haha true!','Nice one 👍','Tell me more!','Same here — month-end is tight 😅']);
+}
+function drawFriends(){
+  const q=connQ.trim().toLowerCase(),list=S.friends.filter(f=>f.name.toLowerCase().includes(q));
+  let h=`<div class="small" style="margin-bottom:8px">${q?'Results':'Friends'} · ${list.length}</div>`;
+  h+=list.map(f=>`<div class="frow ${f.id===connActive?'on':''}" data-f="${f.id}"><span class="av" style="width:40px;height:40px;background:${f.color};font-size:15px">${initials(f.name)}</span><div style="flex:1"><b>${esc(f.name)}</b><small><span class="dot ${f.on?'on':''}"></span>${f.on?'Online':'Offline'}</small></div><button class="btn ghost" style="padding:6px 12px">Chat</button></div>`).join('');
+  if(q&&!list.length)h+=`<p class="small">No friend found.</p>`;
+  if(q&&!S.friends.some(f=>f.name.toLowerCase()===q))h+=`<button class="btn teal" id="addF" style="width:100%;margin-top:8px">+ Add “${esc(connQ.trim())}” as a friend</button>`;
+  $('flist').innerHTML=h;
+  $('flist').querySelectorAll('[data-f]').forEach(r=>r.onclick=()=>{connActive=r.dataset.f;render();});
+  const ad=$('addF');if(ad)ad.onclick=()=>{const n=connQ.trim().slice(0,30);const f={id:'f'+Date.now(),name:n,on:true,color:FCOL[S.friends.length%FCOL.length]};S.friends.push(f);connActive=f.id;connQ='';save();render();};
+}
+function drawMsgs(){
+  const f=S.friends.find(x=>x.id===connActive),box=$('cmsgs');if(!f||!box)return;
+  const m=S.chats[f.id]||[];
+  box.innerHTML=m.length?m.map(x=>`<div class="msg ${x.me?'me':'bot'}">${esc(x.text)}</div>`).join(''):`<p class="small center" style="margin:auto">Say hi to ${esc(f.name)} 👋</p>`;
+  box.scrollTop=box.scrollHeight;
+}
+function drawChat(){
+  const f=S.friends.find(x=>x.id===connActive),el=$('fchat');
+  if(!f){el.innerHTML='<p class="small center" style="margin:auto;padding:20px">Search a friend’s name, then pick them to start chatting 💬</p>';return;}
+  el.innerHTML=`<div class="chead"><button class="backb" id="backF">‹</button><span class="av" style="width:40px;height:40px;background:${f.color};font-size:15px">${initials(f.name)}</span><div><b>${esc(f.name)}</b><div class="small"><span class="dot ${f.on?'on':''}"></span>${f.on?'Online':'Offline'}</div></div></div><div id="cmsgs"></div><div class="cin"><input id="cIn" placeholder="Type a message…" autocomplete="off"><button id="cSend">➤</button></div>`;
+  drawMsgs();
+  const send=()=>{const t=$('cIn').value.trim();if(!t)return;$('cIn').value='';(S.chats[f.id]=S.chats[f.id]||[]).push({me:true,text:t});drawMsgs();save();
+    setTimeout(()=>{(S.chats[f.id]=S.chats[f.id]||[]).push({me:false,text:friendReply(t)});save();if(current==='connection'&&connActive===f.id)drawMsgs();},800);};
+  $('cSend').onclick=send;$('cIn').onkeydown=e=>{if(e.key==='Enter')send();};
+  $('backF').onclick=()=>{connActive=null;render();};
+}
+function renderConnection(c){
+  $('pageSub').textContent='Chat with friends about money';
+  c.innerHTML=`<div class="conn ${connActive?'chatting':''}"><div class="searchbox"><span>🔍</span><input id="fq" placeholder="Search friend's name…" value="${esc(connQ)}" autocomplete="off"><button id="fclr" aria-label="Clear">✕</button></div>
+   <p class="small center">Demo mode: friends are simulated and chats are stored only in this browser. Real friend-to-friend chat needs a server.</p>
+   <div class="conn-grid"><div class="card" id="flist"></div><div class="card chatcard" id="fchat"></div></div></div>`;
+  $('fq').oninput=e=>{connQ=e.target.value;drawFriends();};
+  $('fclr').onclick=()=>{connQ='';$('fq').value='';drawFriends();};
+  drawFriends();drawChat();
+}
+
+/* ============ SETTINGS ============ */
+function renderSettings(c){
+  $('pageSub').textContent='Manage your save data';
+  c.innerHTML=`<div class="card"><h3>Reset Game</h3><p class="small">Clears all progress and returns you to the sign-up screen.</p><button class="btn danger" id="resetBtn">Reset Game</button></div>
+  <div class="card section"><p class="small">This game is designed for financial education and simulation purposes only. It does not provide personalised financial advice or guarantee investment results.</p></div>`;
+  let armed=false;
+  $('resetBtn').onclick=()=>{
+    if(!armed){armed=true;$('resetBtn').textContent='Tap again to confirm reset';setTimeout(()=>{armed=false;if($('resetBtn'))$('resetBtn').textContent='Reset Game';},4000);return;}
+    resetGame();
+  };
+}
+
+/* ============ AI COACH CHAT WIDGET (bottom-right) ============ */
+function coachAnalyze(zh){
+  const T=(en,cn)=>zh?cn:en; const exp=totalExpenses(); const notes=[],recs=[];
+  if(S.expenses.entertainment>S.income*0.3){notes.push(T('You spend over 30% of income on entertainment.','你的娱乐支出超过收入的30%。'));recs.push(T('Trim entertainment toward 10-15% of income.','把娱乐支出降到收入的10-15%。'));}
+  if(S.emergencyFund<exp*3){notes.push(T('Your emergency fund may not cover unexpected costs (target: 3-6 months of expenses).','你的紧急基金可能不足以应对意外(目标:3-6个月支出)。'));recs.push(T('Build your emergency fund before adding investment risk.','先补足紧急基金,再增加投资风险。'));}
+  const pv=portfolioValue();
+  if(pv>0&&S.holdings.tech*S.prices.tech/pv>0.6){notes.push(T('Your portfolio is concentrated in high-risk assets.','你的投资过度集中在高风险资产。'));recs.push(T('Diversify into bonds, gold or Malaysian stocks.','分散到债券、黄金或马来西亚股票。'));}
+  if(S.debt>S.income*0.5){notes.push(T('Your debt is high compared with monthly income.','你的债务相对月收入偏高。'));recs.push(T('Put spare cash toward paying down debt first.','优先用多余现金偿还债务。'));}
+  if(S.income-exp<0){notes.push(T('Expenses exceed income.','支出超过了收入。'));recs.push(T('Review your budget and cut non-essentials first.','检查预算,先削减非必要开支。'));}
+  if(!notes.length){notes.push(T('Your finances look balanced.','你的财务状况比较均衡。'));recs.push(T('Keep growing your emergency fund and diversified investing.','继续增加紧急基金并保持分散投资。'));}
+  return {notes,recs};
+}
+function botReply(q){
+  const zh=/[\u4e00-\u9fa5]/.test(q), t=q.toLowerCase(), T=(en,cn)=>zh?cn:en, has=(...k)=>k.some(x=>t.includes(x));
+  const sc=healthScore();
+  if(has('analy','分析','review','advice','建议','how am i','怎么样')){const a=coachAnalyze(zh);return T('📊 Analysis\n','📊 分析\n')+a.notes.join(' ')+T('\n\n💡 Recommendation\n','\n\n💡 建议\n')+a.recs.join(' ')+T('\n\nEducational feedback only, not professional advice.','\n\n仅为教育性反馈,不构成专业理财建议。');}
+  if(has('score','分数','health','健康'))return T(`Your Financial Health Score is ${sc}/100 (${scoreLabel(sc)}). It weighs savings, emergency fund, debt, spending, diversification and cash flow.`,`你的财务健康分是 ${sc}/100。它综合了储蓄、紧急基金、债务、支出、投资分散度和现金流。`);
+  if(has('emergency','紧急','应急'))return T(`An emergency fund should cover 3-6 months of expenses. Yours: ${fmt(S.emergencyFund)}. Target: ${fmt(totalExpenses()*3)}+.`,`紧急基金应覆盖3-6个月的支出。你现在有 ${fmt(S.emergencyFund)},目标至少 ${fmt(totalExpenses()*3)}。`);
+  if(has('debt','credit','债','信用卡'))return T(`Your debt is ${fmt(S.debt)} and grows ~2% each month. Paying credit cards in full avoids interest.`,`你的债务是 ${fmt(S.debt)},每月约增长2%利息。信用卡全额还款可避免利息。`);
+  if(has('invest','stock','投资','股'))return T('Diversification spreads risk: mix bonds (low risk), gold/Malaysian stocks (medium) and tech (high). Avoid panic-selling in crashes.','分散投资可降低风险:债券(低)、黄金/马股(中)、科技股(高)。市场下跌时避免恐慌卖出。');
+  if(has('budget','预算','save','储蓄','存'))return T(`You earn ${fmt(S.income)} and spend ${fmt(totalExpenses())}, leaving ${fmt(S.income-totalExpenses())}/month. Try the 6 Jars split: 55% needs, 10% each play/education/investing/savings, 5% give.`,`你月收入 ${fmt(S.income)},支出 ${fmt(totalExpenses())},每月结余 ${fmt(S.income-totalExpenses())}。可尝试6罐法:55%必需、玩乐/教育/投资/储蓄各10%、5%捐赠。`);
+  if(has('inflation','通胀','通货'))return T('Inflation makes everyday costs rise, so idle cash buys less over time. Investments that outpace inflation help protect value.','通货膨胀让日常花费上涨,闲置现金购买力下降。跑赢通胀的投资有助保值。');
+  return T('I can help with: analysing your finances, budget, emergency fund, debt, investing, inflation or your score. Try a suggestion below!','我可以帮你:分析财务、预算、紧急基金、债务、投资、通胀或健康分。试试下面的建议吧!');
+}
+function addMsg(text,who){const m=document.createElement('div');m.className='msg '+who;m.textContent=text;const b=$('chatMsgs');b.appendChild(m);b.scrollTop=b.scrollHeight;return m;}
+function sendChat(q){
+  q=(q||'').trim();if(!q)return;addMsg(q,'me');
+  const d=addMsg('','bot');d.innerHTML='<span class="dots"><span></span><span></span><span></span></span>';
+  setTimeout(()=>{d.textContent=botReply(q);$('chatMsgs').scrollTop=1e6;},650);
+}
+function initChat(){
+  const panel=$('chatPanel'),inp=$('chatInput'),send=$('chatSend'),chips=$('chatChips');
+  let agreed=false,started=false;try{agreed=localStorage.getItem('wangwise_ai')==='1';}catch(e){}
+  const unlock=()=>{inp.disabled=false;send.disabled=false;inp.placeholder='We are here to help you.';chips.style.display='flex';};
+  if(!agreed){inp.disabled=true;send.disabled=true;inp.placeholder='Please agree to proceed…';chips.style.display='none';}
+  const hello=()=>{
+    if(agreed){addMsg("Hi! I'm Wise, your AI Financial Coach 👋 Ask me about your budget, debt, investing or health score. 你也可以用中文提问。",'bot');unlock();return;}
+    addMsg('Hi there! Before we proceed, I would like you to know that by continuing this conversation, you agree this is an educational simulation and not professional financial advice.','bot');
+    const b=document.createElement('button');b.className='agree';b.textContent='I agree & proceed to chat';
+    b.onclick=()=>{agreed=true;try{localStorage.setItem('wangwise_ai','1');}catch(e){}b.remove();addMsg("Great! Ask me about your budget, debt, investing or health score. 你也可以用中文提问。",'bot');unlock();};
+    $('chatMsgs').appendChild(b);
+  };
+  const toggle=()=>{panel.classList.toggle('open');if(panel.classList.contains('open')&&!started){started=true;hello();}};
+  $('chatFab').onclick=toggle;$('chatClose').onclick=toggle;
+  send.onclick=()=>{sendChat(inp.value);inp.value='';};
+  inp.onkeydown=e=>{if(e.key==='Enter'){sendChat(inp.value);inp.value='';}};
+  document.querySelectorAll('[data-q]').forEach(b=>{if(b.closest('#chatChips'))b.onclick=()=>sendChat(b.dataset.q);});
+}
+
+
+function resetGame(){
+  try{localStorage.removeItem('wangwise_save');}catch(e){}
+  S=null;lastPage=null;current='dash';learnMod=null;learnTab='home';expPer='Monthly';showBudget=false;
+  invCat='Stocks';invId='msia';invRange=30;tradeSide='Buy';tradeAsset=null;connQ='';connActive=null;
+  ['suName','suAge','suSal','suCash'].forEach(i=>$(i).value='');$('suErr').textContent='';
+  $('chatPanel').classList.remove('open');$('chatMsgs').innerHTML='';
+  $('app').classList.remove('show');$('setupScreen').style.display='';
+  window.scrollTo(0,0);
+}
+
+/* ============ VISUAL EFFECTS ============ */
+let lastPage=null;
+function countUp(root){
+  root.querySelectorAll('.stat-val').forEach(el=>{
+    if(el.children.length)return;
+    const m=el.textContent.match(/^(RM)?(-?[\d,]+)(.*)$/);if(!m)return;
+    const end=parseInt(m[2].replace(/,/g,''),10);if(isNaN(end)||Math.abs(end)<2)return;
+    const pre=m[1]||'',suf=m[3]||'',t0=performance.now();
+    const step=t=>{const k=Math.min(1,(t-t0)/800),e=1-Math.pow(1-k,3);el.textContent=pre+Math.round(end*e).toLocaleString()+suf;if(k<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);
+  });
+}
+function burst(){
+  const cols=['#7C6CFF','#38BDF8','#2DE2B5','#F5A94E','#F472B6'];
+  for(let i=0;i<30;i++){const e=document.createElement('i');e.className='cf';
+    e.style.background=cols[i%cols.length];e.style.setProperty('--dx',(Math.random()*500-250)+'px');e.style.setProperty('--dy',(Math.random()*340+40)+'px');e.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    document.body.appendChild(e);setTimeout(()=>e.remove(),1400);}
+}
+function afterRender(){
+  const c=$('pageContent'),enter=lastPage!==current;lastPage=current;
+  c.classList.remove('enter');
+  if(enter){
+    [...c.children].forEach((el,i)=>el.style.setProperty('--i',i));
+    c.querySelectorAll('.grid>.card,.fgrid>.card,.ticks>.card,.path-card').forEach((el,i)=>el.style.setProperty('--i',i+1));
+    void c.offsetWidth;c.classList.add('enter');countUp(c);
+  }
+  const lvl=levelFromXp(S.xp),into=S.xp%60;
+  $('sideFoot').innerHTML='<small>Level '+lvl+'</small><b>'+LEVELS[lvl-1]+'</b><div class="bar-track"><div class="bar-fill" style="width:'+(lvl>=LEVELS.length?100:into/60*100)+'%"></div></div><small style="margin-top:6px">'+S.xp+' XP</small>';
+}
+document.addEventListener('mousemove',e=>{const c=e.target.closest&&e.target.closest('.card');if(c){const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px');}});
+
+/* ============ BOOT ============ */
+function boot(){$('setupScreen').style.display='none';$('app').classList.add('show');render();}
+initChat();
+if(load())boot();
+
+</script>
+</body>
+</html>
